@@ -699,8 +699,8 @@
   }
 
   function starMarks(node) {
-    const solid = node.starSolid ? "★" : "";
-    const outline = node.starOutline ? "☆" : "";
+    const solid = node.starSolid ? "⭐" : "";
+    const outline = node.starOutline ? "♥️" : "";
     return `${solid}${outline}`;
   }
 
@@ -710,8 +710,8 @@
     const connect = connectStartId === node.id ? " active" : "";
     const group = groupMoveId === node.id ? " active" : "";
     const stars = node.type === "core" ? "" : `
-      <button type="button" class="${solid.trim()}" data-star="solid" title="★ 흐름 표시">★</button>
-      <button type="button" class="${outline.trim()}" data-star="outline" title="☆ 흐름 표시">☆</button>
+      <button type="button" class="${solid.trim()}" data-star="solid" title="⭐로 표시">⭐</button>
+      <button type="button" class="${outline.trim()}" data-star="outline" title="♥️로 표시">♥️</button>
     `;
     return `
       ${stars}
@@ -1889,7 +1889,7 @@
     const title = node.type === "keyword" ? node.title : activity.topic;
     const top = node.type === "activity" ? activity.grade : "키워드";
     const dot = node.type === "activity" && activity.secondaryArea ? `<circle cx="${node.x + 58}" cy="${node.y + 19}" r="6" fill="${AREA_META[activity.secondaryArea].color}" stroke="#666" stroke-width="1"/>` : "";
-    const stars = `${node.starSolid ? "★" : ""}${node.starOutline ? "☆" : ""}`;
+    const stars = `${node.starSolid ? "⭐" : ""}${node.starOutline ? "♥️" : ""}`;
     const charsPerLine = Math.max(8, Math.floor((dim.w - 26) / 12));
     const lines = wrapText(title, charsPerLine, node.type === "activity" ? 3 : 2);
     const textLines = lines.map((line, index) => `<text x="${node.x + 12}" y="${node.y + 50 + index * 18}" font-size="14" font-weight="700" fill="#242623">${escapeHtml(line)}</text>`).join("");
@@ -1913,8 +1913,8 @@
           <p>${escapeHtml(state.student.number || "")} ${escapeHtml(state.student.name || "")}</p>
         </div>
         <div class="print-meta">
-          <p>★ ${escapeHtml(state.mindmap.starLabels.solid || "")}</p>
-          <p>☆ ${escapeHtml(state.mindmap.starLabels.outline || "")}</p>
+          <p>⭐ ${escapeHtml(state.mindmap.starLabels.solid || "")}</p>
+          <p>♥️ ${escapeHtml(state.mindmap.starLabels.outline || "")}</p>
           <p>출력일: ${dateText}</p>
         </div>
       </header>

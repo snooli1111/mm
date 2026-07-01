@@ -129,7 +129,7 @@
             </label>
           </div>
           <div class="tool-cluster activity-export-cluster" aria-label="활동 리스트 내보내기">
-            <span class="cluster-label">활동 LIST</span>
+            <span class="cluster-label">활동 목록</span>
             <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">복사</button>
             <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 저장</button>
             <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">인쇄</button>
@@ -172,16 +172,13 @@
         <div class="toolbar-scroll">
           <div class="tool-cluster flow-cluster" aria-label="별표 흐름">
             <div class="flow-labels">
-              <label title="검은별로 표시할 주요 흐름 이름">★ <input id="solidFlowName" type="text" placeholder="눈에 띄는 주요 키워드"></label>
-              <label title="빈별로 표시할 보조 흐름 이름">☆ <input id="outlineFlowName" type="text" placeholder="예: 심리 상담"></label>
+              <label title="⭐로 표시할 이름">⭐ <input id="solidFlowName" type="text" placeholder="눈에 띄는 주요 키워드"></label>
+              <label title="♥️로 표시할 이름">♥️ <input id="outlineFlowName" type="text" placeholder="예: 심리 상담"></label>
             </div>
-          </div>
-          <div class="tool-cluster edit-cluster" aria-label="마인드맵 조작">
-            <span class="cluster-label">조작</span>
-            <button type="button" id="undoBtn" class="icon-button" title="마인드맵 조작을 한 단계 되돌린다." aria-label="실행취소">↶</button>
           </div>
           <div class="tool-cluster view-cluster" aria-label="화면 조작">
             <span class="cluster-label">화면</span>
+            <button type="button" id="undoBtn" class="icon-button" title="마인드맵 조작을 한 단계 되돌린다." aria-label="실행취소">↶</button>
             <button type="button" id="zoomOutBtn">-</button>
             <button type="button" id="zoomResetBtn">100%</button>
             <button type="button" id="zoomInBtn">+</button>
@@ -198,7 +195,7 @@
                 <option value="area:core-community">공동체역량</option>
               </select>
             </label>
-            <button type="button" id="printSelectedBtn">출력</button>
+            <button type="button" id="printSelectedBtn">인쇄</button>
           </div>
         </div>
       </div>
@@ -308,7 +305,7 @@
             <li>1학년 활동을 모두 입력한 후, 마인드맵탭 캔버스에 배치한다.</li>
             <li>2학년도 같은 방식으로 반복한다.</li>
             <li>3학년은 아직 생기부가 나오지 않았으니 떠오르는 대로 입력한다. 예를 들면 참여한 활동의 주제, 수행평가 주제, 독서, 앞으로 남은 활동 등이다.</li>
-            <li>마인드맵탭에서 배치하며, 유독 눈에 띄거나 중요하다고 생각되는 활동에 ★ 또는 ☆로 표시한다.</li>
+            <li>마인드맵탭에서 배치하며, 유독 눈에 띄거나 중요하다고 생각되는 활동에 ⭐ 또는 ♥️로 표시한다.</li>
             <li>활동입력탭 또는 마인드맵탭에서 인쇄 버튼으로 뽑아 교사와 함께 점검한다.</li>
           </ol>
         </section>
