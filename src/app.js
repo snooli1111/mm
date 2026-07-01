@@ -30,6 +30,7 @@
   let autosaveTimer = null;
   let toastTimer = null;
   let activitySearchQuery = "";
+  let sideSearchQuery = "";
   let dragState = null;
   let panState = null;
 
@@ -63,7 +64,7 @@
       "mindmapSvg", "viewportGroup",
       "edgesGroup", "edgeLabelsGroup", "nodesGroup", "placementHint",
       "showKeywordFormBtn", "keywordForm", "keywordTitle", "keywordMemo",
-      "cancelKeywordBtn", "sideSearch", "sideGradeFilter", "sidePlacedFilter",
+      "cancelKeywordBtn", "sideSearch", "sideSearchBtn", "sideGradeFilter", "sidePlacedFilter",
       "sideActivityList", "detailContent", "activityPanel", "detailPanel", "toast"
     ];
     ids.forEach((id) => {
@@ -154,7 +155,13 @@
     document.querySelectorAll(".panel-tab").forEach((button) => {
       button.addEventListener("click", () => switchPanel(button.dataset.panel));
     });
-    els.sideSearch.addEventListener("input", renderSideActivityList);
+    els.sideSearchBtn.addEventListener("click", applySideSearch);
+    els.sideSearch.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applySideSearch();
+      }
+    });
     els.sideGradeFilter.addEventListener("change", renderSideActivityList);
     els.sidePlacedFilter.addEventListener("change", renderSideActivityList);
   }
@@ -302,6 +309,7 @@
     if (!topic) return showValidation("활동주제를 입력해야 한다.");
     if (topic.length > 100) return showValidation("활동주제는 100자 이내로 입력해야 한다.");
     if (!format) return showValidation("형식을 입력해야 한다.");
+    if (format.length > 50) return showValidation("형식은 50자 이내로 입력해야 한다.");
     if (!primaryArea) return showValidation("평가영역1을 선택해야 한다.");
     if (secondaryArea && secondaryArea === primaryArea) {
       return showValidation("평가영역2는 평가영역1과 다르게 선택해야 한다.");
@@ -329,6 +337,17 @@
     activitySearchQuery = "";
     els.activitySearch.value = "";
     renderActivityTable();
+  }
+
+  function applySideSearch() {
+    sideSearchQuery = normalize(els.sideSearch.value);
+    renderSideActivityList();
+  }
+
+  function resetSideSearch() {
+    sideSearchQuery = "";
+    els.sideSearch.value = "";
+    renderSideActivityList();
   }
 
   function nextHiddenSequence(grade) {
@@ -456,7 +475,7 @@
   }
 
   function renderSideActivityList() {
-    const query = normalize(els.sideSearch.value);
+    const query = sideSearchQuery;
     const grade = els.sideGradeFilter.value;
     const placedFilter = els.sidePlacedFilter.value;
     const activities = state.activities.filter((activity) => {
@@ -924,7 +943,7 @@
         ${detailRow("학년", activity.grade)}
         ${detailRow("항목", activity.category)}
         ${detailRow("세부항목", activity.subcategory || "")}
-        ${detailRow("추가 과목명", activity.subjectDetail || "")}
+        ${detailRow("과목명 추가", activity.subjectDetail || "")}
         ${detailRow("형식", activity.format)}
         ${detailRow("평가영역1", activity.primaryArea)}
         ${detailRow("평가영역2", activity.secondaryArea || "")}
@@ -1230,7 +1249,7 @@
     const content = JSON.stringify(state, null, 2);
     const filename = `생기부마인드맵_${safeFilename(state.student.number)}_${safeFilename(state.student.name)}.json`;
     downloadText(filename, content, "application/json;charset=utf-8");
-    setSaveStatus("프로젝트 파일 저장: 활동표+마인드맵 전체");
+    setSaveStatus("프로젝트 파일 저장됨");
     scheduleAutosave();
   }
 
@@ -1256,6 +1275,7 @@
         pendingActivityId = null;
         connectStartId = null;
         resetActivitySearch();
+        resetSideSearch();
         clearActivityForm();
         renderAll();
         scheduleAutosave();
@@ -1277,6 +1297,7 @@
     connectStartId = null;
     editingActivityId = null;
     resetActivitySearch();
+    resetSideSearch();
     localStorage.removeItem(AUTOSAVE_KEY);
     clearActivityForm();
     renderAll();
@@ -1422,6 +1443,7 @@
       undoStack = [];
       selected = { type: null, id: null };
       resetActivitySearch();
+      resetSideSearch();
       clearActivityForm();
       renderAll();
       els.autosaveBanner.hidden = true;
@@ -1477,7 +1499,7 @@
   }
 
   function buildActivityTsv() {
-    const headers = ["학년", "항목", "세부항목", "추가 과목명", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
+    const headers = ["학년", "항목", "세부항목", "과목명 추가", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
     const rows = state.activities.map((activity) => [
       activity.grade,
       activity.category,
@@ -1509,7 +1531,7 @@
     const html = printShell(`
       ${printHeader("활동 입력표")}
       <table class="print-table">
-        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>추가 과목명</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
+        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>과목명 추가</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="9">입력한 활동이 없다.</td></tr>'}</tbody>
       </table>
     `, "portrait");
@@ -1536,8 +1558,10 @@
     const svg = buildPrintSvg(selection.nodes, selection.edges, selection.viewBox);
     const title = mode === "area" ? `${nodeLabel(getNode(areaId))} 마인드맵` : "생기부 활동 마인드맵";
     const html = printShell(`
-      ${printHeader(title)}
-      <div class="map-print-wrap">${svg}</div>
+      <main class="print-page map-page">
+        ${printHeader(title)}
+        <div class="map-print-wrap">${svg}</div>
+      </main>
     `, "landscape");
     openPrintWindow(html);
   }
@@ -1670,13 +1694,17 @@
         <meta charset="utf-8">
         <title>출력</title>
         <style>
-          @page { size: A4 ${orientation}; margin: 12mm; }
-          body { margin: 0; font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #242623; }
+          @page { size: A4 ${orientation}; margin: 8mm; }
+          * { box-sizing: border-box; }
+          html, body { margin: 0; padding: 0; }
+          body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #242623; }
+          .print-page { break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+          .map-page { height: 194mm; display: flex; flex-direction: column; }
           .print-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 10px; border-bottom: 1px solid #d9ded6; padding-bottom: 8px; }
           .print-header h1 { margin: 0 0 4px; font-size: 20px; }
           .print-header p { margin: 0; font-size: 12px; }
           .print-meta { text-align: right; display: grid; gap: 3px; }
-          .map-print-wrap { width: 100%; height: 170mm; border: 1px solid #d9ded6; overflow: hidden; }
+          .map-print-wrap { width: 100%; flex: 1 1 auto; min-height: 0; border: 1px solid #d9ded6; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
           .print-map { width: 100%; height: 100%; display: block; }
           .print-table { width: 100%; border-collapse: collapse; font-size: 11px; }
           .print-table th, .print-table td { border: 1px solid #cfd5cb; padding: 5px; vertical-align: top; text-align: left; word-break: break-word; }

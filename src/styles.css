@@ -187,30 +187,26 @@ label {
 
 .student-bar {
   display: flex;
-  align-items: end;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
 .student-bar label {
-  width: 130px;
-}
-
-.student-bar label:nth-child(2) {
-  width: 120px;
-}
-
-.project-save-note {
-  align-self: center;
-  padding: 7px 10px;
-  border: 1px solid #d8ccba;
-  border-radius: 999px;
-  background: #faf5ea;
-  color: var(--seal);
-  font-size: 12px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
   white-space: nowrap;
+}
+
+.student-bar label input {
+  width: 128px;
+}
+
+.student-bar label:nth-child(2) input {
+  width: 120px;
 }
 
 .tabs {
@@ -252,6 +248,11 @@ main {
   display: block;
 }
 
+#mindmapTab {
+  padding-top: 8px;
+  padding-bottom: 12px;
+}
+
 .section-toolbar,
 .mindmap-topbar {
   display: flex;
@@ -279,6 +280,7 @@ main {
   border-radius: 12px;
   background: rgba(252, 251, 246, 0.78);
   box-shadow: var(--shadow-soft);
+  flex-shrink: 0;
 }
 
 .edit-cluster {
@@ -286,11 +288,11 @@ main {
 }
 
 .print-cluster {
-  order: 2;
+  order: 3;
 }
 
 .view-cluster {
-  order: 3;
+  order: 2;
   opacity: 0.9;
 }
 
@@ -364,11 +366,11 @@ main {
 }
 
 .classification-row {
-  grid-template-columns: 82px 126px minmax(180px, 260px) minmax(170px, 260px);
+  grid-template-columns: 82px 126px 118px 210px 132px 132px;
 }
 
 .content-row {
-  grid-template-columns: minmax(360px, 1fr) minmax(180px, 240px) 130px 130px;
+  grid-template-columns: minmax(460px, 1fr) 300px;
 }
 
 .topic-field textarea {
@@ -405,30 +407,42 @@ main {
   margin-top: 16px;
 }
 
-.table-toolbar {
+.activity-table-tools {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-
-.list-controls {
-  display: flex;
-  align-items: end;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
-.list-controls label {
-  width: min(360px, 100%);
+.activity-view-cluster {
+  justify-content: flex-start;
 }
 
-.list-controls .search-field {
-  width: min(420px, 100%);
+.activity-export-cluster {
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
-.list-controls label:last-child {
-  width: 180px;
+.activity-table-tools .cluster-label {
+  color: var(--seal);
+  font-weight: 700;
+}
+
+.activity-table-tools .search-field {
+  width: clamp(220px, 24vw, 310px);
+}
+
+.activity-table-tools .sort-select {
+  color: var(--seal);
+  font-weight: 700;
+}
+
+.activity-table-tools .sort-select select {
+  color: var(--ink);
+  font-weight: 500;
+  width: 150px;
 }
 
 .table-wrap {
@@ -549,19 +563,40 @@ main {
 }
 
 .mindmap-topbar {
-  align-items: stretch;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+}
+
+.mindmap-topbar .toolbar-scroll {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  row-gap: 6px;
+  flex-wrap: wrap;
+}
+
+.flow-cluster {
+  margin-right: auto;
 }
 
 .flow-labels {
   display: flex;
-  align-items: end;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .flow-labels label {
-  width: 210px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 226px;
+}
+
+.flow-labels input {
+  height: 36px;
+  padding-block: 7px;
 }
 
 .mode-buttons {
@@ -576,6 +611,7 @@ main {
 .mode-buttons .mode {
   border-color: transparent;
   background: transparent;
+  padding-inline: 11px;
 }
 
 .mode-buttons .mode.active {
@@ -602,7 +638,7 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
   gap: 12px;
-  height: calc(100% - 64px);
+  height: calc(100% - 52px);
   min-height: 520px;
 }
 
@@ -704,6 +740,8 @@ main {
 
 .side-filters {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: 10px;
   margin-bottom: 12px;
   padding: 10px;
@@ -718,6 +756,7 @@ main {
   justify-content: space-between;
   gap: 8px;
   padding-bottom: 2px;
+  grid-column: 1 / -1;
 }
 
 .side-filter-title strong {
@@ -735,19 +774,40 @@ main {
   font-size: 12px;
 }
 
+#sideSearchBtn {
+  min-width: 58px;
+}
+
 .filter-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  grid-column: 1 / -1;
 }
 
 .filter-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .filter-row select,
 .side-search-label input {
   background: var(--panel);
+}
+
+.filter-row select {
+  width: auto;
+}
+
+#sideGradeFilter {
+  width: 74px;
+}
+
+#sidePlacedFilter {
+  width: 102px;
 }
 
 .side-activity-list {
@@ -1078,6 +1138,10 @@ main {
     grid-template-columns: 1fr 220px;
   }
 
+  .mindmap-topbar {
+    grid-template-columns: 1fr;
+  }
+
   .mindmap-layout {
     grid-template-columns: 1fr;
     height: auto;
@@ -1097,6 +1161,7 @@ main {
   .form-grid,
   .classification-row,
   .content-row,
+  .side-filters,
   .filter-row {
     grid-template-columns: 1fr;
   }
@@ -1110,7 +1175,9 @@ main {
   .student-bar,
   .flow-labels,
   .toolbar-scroll,
-  .list-controls {
+  .activity-table-tools,
+  .activity-view-cluster,
+  .activity-export-cluster {
     width: 100%;
   }
 }
@@ -1125,8 +1192,7 @@ main {
   .app-header,
   .tabs,
   .section-toolbar,
-  .table-toolbar,
-  .list-controls,
+  .activity-table-tools,
   .mindmap-topbar,
   .side-panel,
   .toast {

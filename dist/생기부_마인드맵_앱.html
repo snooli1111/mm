@@ -194,30 +194,26 @@ label {
 
 .student-bar {
   display: flex;
-  align-items: end;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
 .student-bar label {
-  width: 130px;
-}
-
-.student-bar label:nth-child(2) {
-  width: 120px;
-}
-
-.project-save-note {
-  align-self: center;
-  padding: 7px 10px;
-  border: 1px solid #d8ccba;
-  border-radius: 999px;
-  background: #faf5ea;
-  color: var(--seal);
-  font-size: 12px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
   white-space: nowrap;
+}
+
+.student-bar label input {
+  width: 128px;
+}
+
+.student-bar label:nth-child(2) input {
+  width: 120px;
 }
 
 .tabs {
@@ -259,6 +255,11 @@ main {
   display: block;
 }
 
+#mindmapTab {
+  padding-top: 8px;
+  padding-bottom: 12px;
+}
+
 .section-toolbar,
 .mindmap-topbar {
   display: flex;
@@ -286,6 +287,7 @@ main {
   border-radius: 12px;
   background: rgba(252, 251, 246, 0.78);
   box-shadow: var(--shadow-soft);
+  flex-shrink: 0;
 }
 
 .edit-cluster {
@@ -293,11 +295,11 @@ main {
 }
 
 .print-cluster {
-  order: 2;
+  order: 3;
 }
 
 .view-cluster {
-  order: 3;
+  order: 2;
   opacity: 0.9;
 }
 
@@ -371,11 +373,11 @@ main {
 }
 
 .classification-row {
-  grid-template-columns: 82px 126px minmax(180px, 260px) minmax(170px, 260px);
+  grid-template-columns: 82px 126px 118px 210px 132px 132px;
 }
 
 .content-row {
-  grid-template-columns: minmax(360px, 1fr) minmax(180px, 240px) 130px 130px;
+  grid-template-columns: minmax(460px, 1fr) 300px;
 }
 
 .topic-field textarea {
@@ -412,30 +414,42 @@ main {
   margin-top: 16px;
 }
 
-.table-toolbar {
+.activity-table-tools {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-
-.list-controls {
-  display: flex;
-  align-items: end;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
-.list-controls label {
-  width: min(360px, 100%);
+.activity-view-cluster {
+  justify-content: flex-start;
 }
 
-.list-controls .search-field {
-  width: min(420px, 100%);
+.activity-export-cluster {
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
-.list-controls label:last-child {
-  width: 180px;
+.activity-table-tools .cluster-label {
+  color: var(--seal);
+  font-weight: 700;
+}
+
+.activity-table-tools .search-field {
+  width: clamp(220px, 24vw, 310px);
+}
+
+.activity-table-tools .sort-select {
+  color: var(--seal);
+  font-weight: 700;
+}
+
+.activity-table-tools .sort-select select {
+  color: var(--ink);
+  font-weight: 500;
+  width: 150px;
 }
 
 .table-wrap {
@@ -556,19 +570,40 @@ main {
 }
 
 .mindmap-topbar {
-  align-items: stretch;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+}
+
+.mindmap-topbar .toolbar-scroll {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  row-gap: 6px;
+  flex-wrap: wrap;
+}
+
+.flow-cluster {
+  margin-right: auto;
 }
 
 .flow-labels {
   display: flex;
-  align-items: end;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .flow-labels label {
-  width: 210px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 226px;
+}
+
+.flow-labels input {
+  height: 36px;
+  padding-block: 7px;
 }
 
 .mode-buttons {
@@ -583,6 +618,7 @@ main {
 .mode-buttons .mode {
   border-color: transparent;
   background: transparent;
+  padding-inline: 11px;
 }
 
 .mode-buttons .mode.active {
@@ -609,7 +645,7 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
   gap: 12px;
-  height: calc(100% - 64px);
+  height: calc(100% - 52px);
   min-height: 520px;
 }
 
@@ -711,6 +747,8 @@ main {
 
 .side-filters {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: 10px;
   margin-bottom: 12px;
   padding: 10px;
@@ -725,6 +763,7 @@ main {
   justify-content: space-between;
   gap: 8px;
   padding-bottom: 2px;
+  grid-column: 1 / -1;
 }
 
 .side-filter-title strong {
@@ -742,19 +781,40 @@ main {
   font-size: 12px;
 }
 
+#sideSearchBtn {
+  min-width: 58px;
+}
+
 .filter-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  grid-column: 1 / -1;
 }
 
 .filter-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .filter-row select,
 .side-search-label input {
   background: var(--panel);
+}
+
+.filter-row select {
+  width: auto;
+}
+
+#sideGradeFilter {
+  width: 74px;
+}
+
+#sidePlacedFilter {
+  width: 102px;
 }
 
 .side-activity-list {
@@ -1085,6 +1145,10 @@ main {
     grid-template-columns: 1fr 220px;
   }
 
+  .mindmap-topbar {
+    grid-template-columns: 1fr;
+  }
+
   .mindmap-layout {
     grid-template-columns: 1fr;
     height: auto;
@@ -1104,6 +1168,7 @@ main {
   .form-grid,
   .classification-row,
   .content-row,
+  .side-filters,
   .filter-row {
     grid-template-columns: 1fr;
   }
@@ -1117,7 +1182,9 @@ main {
   .student-bar,
   .flow-labels,
   .toolbar-scroll,
-  .list-controls {
+  .activity-table-tools,
+  .activity-view-cluster,
+  .activity-export-cluster {
     width: 100%;
   }
 }
@@ -1132,8 +1199,7 @@ main {
   .app-header,
   .tabs,
   .section-toolbar,
-  .table-toolbar,
-  .list-controls,
+  .activity-table-tools,
   .mindmap-topbar,
   .side-panel,
   .toast {
@@ -1162,7 +1228,6 @@ main {
       <label>학번 <input id="studentNumber" type="text" inputmode="numeric" autocomplete="off"></label>
       <label>이름 <input id="studentName" type="text" autocomplete="off"></label>
       <button type="button" id="loadProjectBtn" title="저장한 프로젝트 파일을 불러온다.">프로젝트 불러오기</button>
-      <span class="project-save-note" title="프로젝트 저장은 활동 입력표와 마인드맵 작업 전체를 .json 파일로 저장한다.">활동표+마인드맵 전체</span>
       <button type="button" id="saveProjectBtn" class="primary" title="활동표와 마인드맵 작업 전체를 공유/불러오기용 .json 파일로 저장한다.">프로젝트 저장</button>
       <button type="button" id="resetProjectBtn" class="danger ghost" title="현재 작업과 자동저장을 모두 지운다.">초기화</button>
       <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
@@ -1201,17 +1266,8 @@ main {
             <label class="subcategory-field">세부항목
               <select id="activitySubcategorySelect"></select>
             </label>
-            <label class="subject-detail-field">추가 과목명
+            <label class="subject-detail-field">과목명 추가
               <input id="activitySubjectDetail" type="text" autocomplete="off" placeholder="예: 윤리와 사상">
-            </label>
-            </div>
-            <div class="form-row content-row">
-            <label class="topic-field">활동주제
-              <textarea id="activityTopic" rows="2" required maxlength="100" placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
-              <span id="topicCount" class="char-count">0/100</span>
-            </label>
-            <label class="format-field">형식
-              <input id="activityFormat" type="text" required placeholder="토론, 보고서, 발표, 반장 등">
             </label>
             <label class="area-field">평가영역1
               <select id="primaryArea" required>
@@ -1230,6 +1286,15 @@ main {
               </select>
             </label>
             </div>
+            <div class="form-row content-row">
+            <label class="topic-field">활동주제
+              <textarea id="activityTopic" rows="2" required maxlength="100" placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
+              <span id="topicCount" class="char-count">0/100</span>
+            </label>
+            <label class="format-field">형식
+              <input id="activityFormat" type="text" required maxlength="50" placeholder="토론, 보고서, 발표, 반장, 모둠장 등">
+            </label>
+            </div>
           </div>
           <label class="wide-label memo-field">메모
             <textarea id="activityMemo" rows="3" maxlength="300" placeholder="필요하면 생각, 연결 아이디어, 보완점 등을 적는다."></textarea>
@@ -1244,20 +1309,15 @@ main {
       </section>
 
       <section class="activity-list-section">
-        <div class="table-toolbar">
-          <div class="toolbar-group">
-            <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">표 복사</button>
-            <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 표 저장</button>
-            <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">표 인쇄</button>
-          </div>
-        </div>
-        <div class="list-controls">
-          <label class="search-field">검색
-            <input id="activitySearch" type="search" placeholder="활동주제, 형식, 메모">
-          </label>
-          <button type="button" id="activitySearchBtn">검색</button>
-          <button type="button" id="activitySearchResetBtn" class="ghost">초기화</button>
-          <label>정렬
+        <div class="activity-table-tools">
+          <div class="tool-cluster activity-view-cluster" aria-label="활동표 보기">
+            <span class="cluster-label">보기</span>
+            <label class="search-field">
+            <input id="activitySearch" type="search" placeholder="활동주제, 형식, 메모" aria-label="활동표 검색">
+            </label>
+            <button type="button" id="activitySearchBtn">검색</button>
+            <button type="button" id="activitySearchResetBtn" class="ghost">초기화</button>
+            <label class="inline-select sort-select">정렬
             <select id="activitySort">
               <option value="input">입력순</option>
               <option value="grade">학년순</option>
@@ -1265,7 +1325,14 @@ main {
               <option value="subcategory">세부항목순</option>
               <option value="primaryArea">평가영역1순</option>
             </select>
-          </label>
+            </label>
+          </div>
+          <div class="tool-cluster activity-export-cluster" aria-label="활동 리스트 내보내기">
+            <span class="cluster-label">활동 LIST</span>
+            <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">복사</button>
+            <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 저장</button>
+            <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">인쇄</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table class="activity-table">
@@ -1285,7 +1352,7 @@ main {
                 <th>학년</th>
                 <th>항목</th>
                 <th>세부항목</th>
-                <th>추가 과목명</th>
+                <th>과목명 추가</th>
                 <th>활동주제</th>
                 <th>형식</th>
                 <th>평가영역1</th>
@@ -1301,19 +1368,21 @@ main {
 
     <section id="mindmapTab" class="tab-panel">
       <div class="mindmap-topbar">
-        <div class="flow-labels">
-          <label>★ 흐름 1 <input id="solidFlowName" type="text" placeholder="예: 심리와 치유"></label>
-          <label>☆ 흐름 2 <input id="outlineFlowName" type="text" placeholder="예: 사회정책과 복지"></label>
-        </div>
         <div class="toolbar-scroll">
+          <div class="tool-cluster flow-cluster" aria-label="별표 흐름">
+            <div class="flow-labels">
+              <label title="검은별로 표시할 주요 흐름 이름">★ <input id="solidFlowName" type="text" placeholder="눈에 띄는 주요 키워드"></label>
+              <label title="빈별로 표시할 보조 흐름 이름">☆ <input id="outlineFlowName" type="text" placeholder="예: 심리 상담"></label>
+            </div>
+          </div>
           <div class="tool-cluster edit-cluster" aria-label="마인드맵 조작">
             <span class="cluster-label">조작</span>
             <button type="button" id="undoBtn" class="icon-button" title="마인드맵 조작을 한 단계 되돌린다." aria-label="실행취소">↶</button>
             <div class="mode-buttons" role="group" aria-label="마인드맵 도구">
-              <button type="button" class="mode active" data-mode="select">선택</button>
-              <button type="button" class="mode" data-mode="connect">연결</button>
-              <button type="button" class="mode" data-mode="group">함께 이동</button>
-              <button type="button" class="mode" data-mode="pan">화면 이동</button>
+              <button type="button" class="mode active" data-mode="select" title="노드를 선택하거나 하나씩 이동한다.">선택</button>
+              <button type="button" class="mode" data-mode="connect" title="노드와 노드를 연결한다.">연결</button>
+              <button type="button" class="mode" data-mode="group" title="연결된 노드를 함께 이동한다.">묶음</button>
+              <button type="button" class="mode" data-mode="pan" title="빈 공간을 끌어 화면을 이동한다.">이동</button>
             </div>
           </div>
           <div class="tool-cluster view-cluster" aria-label="화면 조작">
@@ -1321,7 +1390,7 @@ main {
             <button type="button" id="zoomOutBtn">-</button>
             <button type="button" id="zoomResetBtn">100%</button>
             <button type="button" id="zoomInBtn">+</button>
-            <button type="button" id="fitViewBtn">화면 맞춤</button>
+            <button type="button" id="fitViewBtn" title="마인드맵 전체가 보이도록 맞춘다.">맞춤</button>
           </div>
           <div class="tool-cluster print-cluster" aria-label="인쇄 메뉴">
             <span class="cluster-label">출력</span>
@@ -1353,7 +1422,7 @@ main {
         </section>
 
         <aside class="side-panel" aria-label="마인드맵 오른쪽 패널">
-          <button type="button" id="showKeywordFormBtn" class="primary full-width">+ 키워드 노드</button>
+          <button type="button" id="showKeywordFormBtn" class="primary full-width">키워드 노드 +</button>
           <form id="keywordForm" class="keyword-form" hidden>
             <label>제목 <input id="keywordTitle" type="text" autocomplete="off"></label>
             <label>메모 <textarea id="keywordMemo" rows="3"></textarea></label>
@@ -1374,9 +1443,10 @@ main {
                 <strong>활동 찾기</strong>
                 <span>입력한 활동 목록을 좁혀 본다.</span>
               </div>
-              <label class="side-search-label">검색
-                <input id="sideSearch" type="search" placeholder="활동주제, 형식, 메모">
+              <label class="side-search-label">
+                <input id="sideSearch" type="search" placeholder="활동주제, 형식, 메모" aria-label="마인드맵 활동 검색">
               </label>
+              <button type="button" id="sideSearchBtn">검색</button>
               <div class="filter-row">
                 <label>학년
                   <select id="sideGradeFilter">
@@ -1386,11 +1456,11 @@ main {
                     <option value="3">3</option>
                   </select>
                 </label>
-                <label>배치 상태
+                <label>배치
                   <select id="sidePlacedFilter">
-                    <option value="unplaced">미배치</option>
                     <option value="all">전체</option>
-                    <option value="placed">배치됨</option>
+                    <option value="unplaced">미배치</option>
+                    <option value="placed">배치</option>
                   </select>
                 </label>
               </div>
@@ -1441,6 +1511,7 @@ main {
   let autosaveTimer = null;
   let toastTimer = null;
   let activitySearchQuery = "";
+  let sideSearchQuery = "";
   let dragState = null;
   let panState = null;
 
@@ -1474,7 +1545,7 @@ main {
       "mindmapSvg", "viewportGroup",
       "edgesGroup", "edgeLabelsGroup", "nodesGroup", "placementHint",
       "showKeywordFormBtn", "keywordForm", "keywordTitle", "keywordMemo",
-      "cancelKeywordBtn", "sideSearch", "sideGradeFilter", "sidePlacedFilter",
+      "cancelKeywordBtn", "sideSearch", "sideSearchBtn", "sideGradeFilter", "sidePlacedFilter",
       "sideActivityList", "detailContent", "activityPanel", "detailPanel", "toast"
     ];
     ids.forEach((id) => {
@@ -1565,7 +1636,13 @@ main {
     document.querySelectorAll(".panel-tab").forEach((button) => {
       button.addEventListener("click", () => switchPanel(button.dataset.panel));
     });
-    els.sideSearch.addEventListener("input", renderSideActivityList);
+    els.sideSearchBtn.addEventListener("click", applySideSearch);
+    els.sideSearch.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applySideSearch();
+      }
+    });
     els.sideGradeFilter.addEventListener("change", renderSideActivityList);
     els.sidePlacedFilter.addEventListener("change", renderSideActivityList);
   }
@@ -1713,6 +1790,7 @@ main {
     if (!topic) return showValidation("활동주제를 입력해야 한다.");
     if (topic.length > 100) return showValidation("활동주제는 100자 이내로 입력해야 한다.");
     if (!format) return showValidation("형식을 입력해야 한다.");
+    if (format.length > 50) return showValidation("형식은 50자 이내로 입력해야 한다.");
     if (!primaryArea) return showValidation("평가영역1을 선택해야 한다.");
     if (secondaryArea && secondaryArea === primaryArea) {
       return showValidation("평가영역2는 평가영역1과 다르게 선택해야 한다.");
@@ -1740,6 +1818,17 @@ main {
     activitySearchQuery = "";
     els.activitySearch.value = "";
     renderActivityTable();
+  }
+
+  function applySideSearch() {
+    sideSearchQuery = normalize(els.sideSearch.value);
+    renderSideActivityList();
+  }
+
+  function resetSideSearch() {
+    sideSearchQuery = "";
+    els.sideSearch.value = "";
+    renderSideActivityList();
   }
 
   function nextHiddenSequence(grade) {
@@ -1867,7 +1956,7 @@ main {
   }
 
   function renderSideActivityList() {
-    const query = normalize(els.sideSearch.value);
+    const query = sideSearchQuery;
     const grade = els.sideGradeFilter.value;
     const placedFilter = els.sidePlacedFilter.value;
     const activities = state.activities.filter((activity) => {
@@ -2335,7 +2424,7 @@ main {
         ${detailRow("학년", activity.grade)}
         ${detailRow("항목", activity.category)}
         ${detailRow("세부항목", activity.subcategory || "")}
-        ${detailRow("추가 과목명", activity.subjectDetail || "")}
+        ${detailRow("과목명 추가", activity.subjectDetail || "")}
         ${detailRow("형식", activity.format)}
         ${detailRow("평가영역1", activity.primaryArea)}
         ${detailRow("평가영역2", activity.secondaryArea || "")}
@@ -2641,7 +2730,7 @@ main {
     const content = JSON.stringify(state, null, 2);
     const filename = `생기부마인드맵_${safeFilename(state.student.number)}_${safeFilename(state.student.name)}.json`;
     downloadText(filename, content, "application/json;charset=utf-8");
-    setSaveStatus("프로젝트 파일 저장: 활동표+마인드맵 전체");
+    setSaveStatus("프로젝트 파일 저장됨");
     scheduleAutosave();
   }
 
@@ -2667,6 +2756,7 @@ main {
         pendingActivityId = null;
         connectStartId = null;
         resetActivitySearch();
+        resetSideSearch();
         clearActivityForm();
         renderAll();
         scheduleAutosave();
@@ -2688,6 +2778,7 @@ main {
     connectStartId = null;
     editingActivityId = null;
     resetActivitySearch();
+    resetSideSearch();
     localStorage.removeItem(AUTOSAVE_KEY);
     clearActivityForm();
     renderAll();
@@ -2833,6 +2924,7 @@ main {
       undoStack = [];
       selected = { type: null, id: null };
       resetActivitySearch();
+      resetSideSearch();
       clearActivityForm();
       renderAll();
       els.autosaveBanner.hidden = true;
@@ -2888,7 +2980,7 @@ main {
   }
 
   function buildActivityTsv() {
-    const headers = ["학년", "항목", "세부항목", "추가 과목명", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
+    const headers = ["학년", "항목", "세부항목", "과목명 추가", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
     const rows = state.activities.map((activity) => [
       activity.grade,
       activity.category,
@@ -2920,7 +3012,7 @@ main {
     const html = printShell(`
       ${printHeader("활동 입력표")}
       <table class="print-table">
-        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>추가 과목명</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
+        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>과목명 추가</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="9">입력한 활동이 없다.</td></tr>'}</tbody>
       </table>
     `, "portrait");
@@ -2947,8 +3039,10 @@ main {
     const svg = buildPrintSvg(selection.nodes, selection.edges, selection.viewBox);
     const title = mode === "area" ? `${nodeLabel(getNode(areaId))} 마인드맵` : "생기부 활동 마인드맵";
     const html = printShell(`
-      ${printHeader(title)}
-      <div class="map-print-wrap">${svg}</div>
+      <main class="print-page map-page">
+        ${printHeader(title)}
+        <div class="map-print-wrap">${svg}</div>
+      </main>
     `, "landscape");
     openPrintWindow(html);
   }
@@ -3081,13 +3175,17 @@ main {
         <meta charset="utf-8">
         <title>출력</title>
         <style>
-          @page { size: A4 ${orientation}; margin: 12mm; }
-          body { margin: 0; font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #242623; }
+          @page { size: A4 ${orientation}; margin: 8mm; }
+          * { box-sizing: border-box; }
+          html, body { margin: 0; padding: 0; }
+          body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #242623; }
+          .print-page { break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+          .map-page { height: 194mm; display: flex; flex-direction: column; }
           .print-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 10px; border-bottom: 1px solid #d9ded6; padding-bottom: 8px; }
           .print-header h1 { margin: 0 0 4px; font-size: 20px; }
           .print-header p { margin: 0; font-size: 12px; }
           .print-meta { text-align: right; display: grid; gap: 3px; }
-          .map-print-wrap { width: 100%; height: 170mm; border: 1px solid #d9ded6; overflow: hidden; }
+          .map-print-wrap { width: 100%; flex: 1 1 auto; min-height: 0; border: 1px solid #d9ded6; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
           .print-map { width: 100%; height: 100%; display: block; }
           .print-table { width: 100%; border-collapse: collapse; font-size: 11px; }
           .print-table th, .print-table td { border: 1px solid #cfd5cb; padding: 5px; vertical-align: top; text-align: left; word-break: break-word; }

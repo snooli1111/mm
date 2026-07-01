@@ -25,7 +25,6 @@
       <label>학번 <input id="studentNumber" type="text" inputmode="numeric" autocomplete="off"></label>
       <label>이름 <input id="studentName" type="text" autocomplete="off"></label>
       <button type="button" id="loadProjectBtn" title="저장한 프로젝트 파일을 불러온다.">프로젝트 불러오기</button>
-      <span class="project-save-note" title="프로젝트 저장은 활동 입력표와 마인드맵 작업 전체를 .json 파일로 저장한다.">활동표+마인드맵 전체</span>
       <button type="button" id="saveProjectBtn" class="primary" title="활동표와 마인드맵 작업 전체를 공유/불러오기용 .json 파일로 저장한다.">프로젝트 저장</button>
       <button type="button" id="resetProjectBtn" class="danger ghost" title="현재 작업과 자동저장을 모두 지운다.">초기화</button>
       <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
@@ -64,17 +63,8 @@
             <label class="subcategory-field">세부항목
               <select id="activitySubcategorySelect"></select>
             </label>
-            <label class="subject-detail-field">추가 과목명
+            <label class="subject-detail-field">과목명 추가
               <input id="activitySubjectDetail" type="text" autocomplete="off" placeholder="예: 윤리와 사상">
-            </label>
-            </div>
-            <div class="form-row content-row">
-            <label class="topic-field">활동주제
-              <textarea id="activityTopic" rows="2" required maxlength="100" placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
-              <span id="topicCount" class="char-count">0/100</span>
-            </label>
-            <label class="format-field">형식
-              <input id="activityFormat" type="text" required placeholder="토론, 보고서, 발표, 반장 등">
             </label>
             <label class="area-field">평가영역1
               <select id="primaryArea" required>
@@ -93,6 +83,15 @@
               </select>
             </label>
             </div>
+            <div class="form-row content-row">
+            <label class="topic-field">활동주제
+              <textarea id="activityTopic" rows="2" required maxlength="100" placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
+              <span id="topicCount" class="char-count">0/100</span>
+            </label>
+            <label class="format-field">형식
+              <input id="activityFormat" type="text" required maxlength="50" placeholder="토론, 보고서, 발표, 반장, 모둠장 등">
+            </label>
+            </div>
           </div>
           <label class="wide-label memo-field">메모
             <textarea id="activityMemo" rows="3" maxlength="300" placeholder="필요하면 생각, 연결 아이디어, 보완점 등을 적는다."></textarea>
@@ -107,20 +106,15 @@
       </section>
 
       <section class="activity-list-section">
-        <div class="table-toolbar">
-          <div class="toolbar-group">
-            <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">표 복사</button>
-            <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 표 저장</button>
-            <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">표 인쇄</button>
-          </div>
-        </div>
-        <div class="list-controls">
-          <label class="search-field">검색
-            <input id="activitySearch" type="search" placeholder="활동주제, 형식, 메모">
-          </label>
-          <button type="button" id="activitySearchBtn">검색</button>
-          <button type="button" id="activitySearchResetBtn" class="ghost">초기화</button>
-          <label>정렬
+        <div class="activity-table-tools">
+          <div class="tool-cluster activity-view-cluster" aria-label="활동표 보기">
+            <span class="cluster-label">보기</span>
+            <label class="search-field">
+            <input id="activitySearch" type="search" placeholder="활동주제, 형식, 메모" aria-label="활동표 검색">
+            </label>
+            <button type="button" id="activitySearchBtn">검색</button>
+            <button type="button" id="activitySearchResetBtn" class="ghost">초기화</button>
+            <label class="inline-select sort-select">정렬
             <select id="activitySort">
               <option value="input">입력순</option>
               <option value="grade">학년순</option>
@@ -128,7 +122,14 @@
               <option value="subcategory">세부항목순</option>
               <option value="primaryArea">평가영역1순</option>
             </select>
-          </label>
+            </label>
+          </div>
+          <div class="tool-cluster activity-export-cluster" aria-label="활동 리스트 내보내기">
+            <span class="cluster-label">활동 LIST</span>
+            <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">복사</button>
+            <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 저장</button>
+            <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">인쇄</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table class="activity-table">
@@ -148,7 +149,7 @@
                 <th>학년</th>
                 <th>항목</th>
                 <th>세부항목</th>
-                <th>추가 과목명</th>
+                <th>과목명 추가</th>
                 <th>활동주제</th>
                 <th>형식</th>
                 <th>평가영역1</th>
@@ -164,19 +165,21 @@
 
     <section id="mindmapTab" class="tab-panel">
       <div class="mindmap-topbar">
-        <div class="flow-labels">
-          <label>★ 흐름 1 <input id="solidFlowName" type="text" placeholder="예: 심리와 치유"></label>
-          <label>☆ 흐름 2 <input id="outlineFlowName" type="text" placeholder="예: 사회정책과 복지"></label>
-        </div>
         <div class="toolbar-scroll">
+          <div class="tool-cluster flow-cluster" aria-label="별표 흐름">
+            <div class="flow-labels">
+              <label title="검은별로 표시할 주요 흐름 이름">★ <input id="solidFlowName" type="text" placeholder="눈에 띄는 주요 키워드"></label>
+              <label title="빈별로 표시할 보조 흐름 이름">☆ <input id="outlineFlowName" type="text" placeholder="예: 심리 상담"></label>
+            </div>
+          </div>
           <div class="tool-cluster edit-cluster" aria-label="마인드맵 조작">
             <span class="cluster-label">조작</span>
             <button type="button" id="undoBtn" class="icon-button" title="마인드맵 조작을 한 단계 되돌린다." aria-label="실행취소">↶</button>
             <div class="mode-buttons" role="group" aria-label="마인드맵 도구">
-              <button type="button" class="mode active" data-mode="select">선택</button>
-              <button type="button" class="mode" data-mode="connect">연결</button>
-              <button type="button" class="mode" data-mode="group">함께 이동</button>
-              <button type="button" class="mode" data-mode="pan">화면 이동</button>
+              <button type="button" class="mode active" data-mode="select" title="노드를 선택하거나 하나씩 이동한다.">선택</button>
+              <button type="button" class="mode" data-mode="connect" title="노드와 노드를 연결한다.">연결</button>
+              <button type="button" class="mode" data-mode="group" title="연결된 노드를 함께 이동한다.">묶음</button>
+              <button type="button" class="mode" data-mode="pan" title="빈 공간을 끌어 화면을 이동한다.">이동</button>
             </div>
           </div>
           <div class="tool-cluster view-cluster" aria-label="화면 조작">
@@ -184,7 +187,7 @@
             <button type="button" id="zoomOutBtn">-</button>
             <button type="button" id="zoomResetBtn">100%</button>
             <button type="button" id="zoomInBtn">+</button>
-            <button type="button" id="fitViewBtn">화면 맞춤</button>
+            <button type="button" id="fitViewBtn" title="마인드맵 전체가 보이도록 맞춘다.">맞춤</button>
           </div>
           <div class="tool-cluster print-cluster" aria-label="인쇄 메뉴">
             <span class="cluster-label">출력</span>
@@ -216,7 +219,7 @@
         </section>
 
         <aside class="side-panel" aria-label="마인드맵 오른쪽 패널">
-          <button type="button" id="showKeywordFormBtn" class="primary full-width">+ 키워드 노드</button>
+          <button type="button" id="showKeywordFormBtn" class="primary full-width">키워드 노드 +</button>
           <form id="keywordForm" class="keyword-form" hidden>
             <label>제목 <input id="keywordTitle" type="text" autocomplete="off"></label>
             <label>메모 <textarea id="keywordMemo" rows="3"></textarea></label>
@@ -237,9 +240,10 @@
                 <strong>활동 찾기</strong>
                 <span>입력한 활동 목록을 좁혀 본다.</span>
               </div>
-              <label class="side-search-label">검색
-                <input id="sideSearch" type="search" placeholder="활동주제, 형식, 메모">
+              <label class="side-search-label">
+                <input id="sideSearch" type="search" placeholder="활동주제, 형식, 메모" aria-label="마인드맵 활동 검색">
               </label>
+              <button type="button" id="sideSearchBtn">검색</button>
               <div class="filter-row">
                 <label>학년
                   <select id="sideGradeFilter">
@@ -249,11 +253,11 @@
                     <option value="3">3</option>
                   </select>
                 </label>
-                <label>배치 상태
+                <label>배치
                   <select id="sidePlacedFilter">
-                    <option value="unplaced">미배치</option>
                     <option value="all">전체</option>
-                    <option value="placed">배치됨</option>
+                    <option value="unplaced">미배치</option>
+                    <option value="placed">배치</option>
                   </select>
                 </label>
               </div>
