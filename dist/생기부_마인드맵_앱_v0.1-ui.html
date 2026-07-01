@@ -1,0 +1,2871 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>생기부 활동 마인드맵</title>
+  <style>
+:root {
+  --bg: #f7f8f5;
+  --panel: #ffffff;
+  --ink: #242623;
+  --muted: #6d736b;
+  --line: #d9ded6;
+  --line-dark: #aeb7aa;
+  --academic-bg: #ccf3e8;
+  --academic-border: #2aa98a;
+  --inquiry-bg: #ffd8e8;
+  --inquiry-border: #df5f91;
+  --community-bg: #fff0a8;
+  --community-border: #c5a020;
+  --keyword-bg: #eeeeea;
+  --keyword-border: #9da39a;
+  --danger: #b3261e;
+  --shadow: 0 12px 30px rgba(31, 38, 29, 0.12);
+  color-scheme: light;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 1px solid var(--line-dark);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 7px;
+  padding: 8px 12px;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+button:hover {
+  border-color: #757e73;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: #253028;
+  color: #fff;
+  border-color: #253028;
+}
+
+button.ghost {
+  background: transparent;
+}
+
+button.danger {
+  color: var(--danger);
+  border-color: #d7aba7;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--line-dark);
+  border-radius: 7px;
+  padding: 8px 10px;
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+  min-width: 0;
+}
+
+textarea {
+  resize: vertical;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.autosave-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 16px;
+  background: #253028;
+  color: #fff;
+}
+
+.autosave-banner button {
+  min-height: 30px;
+  padding: 5px 10px;
+}
+
+.autosave-banner .ghost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.student-bar {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.student-bar label {
+  width: 130px;
+}
+
+.student-bar label:nth-child(2) {
+  width: 120px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 18px 0;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.tab {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+  background: #f0f2ee;
+}
+
+.tab.active {
+  background: var(--panel);
+  border-color: var(--line);
+  border-bottom-color: var(--panel);
+  font-weight: 700;
+}
+
+main {
+  height: calc(100vh - 118px);
+  overflow: hidden;
+}
+
+.tab-panel {
+  display: none;
+  height: 100%;
+  overflow: auto;
+  padding: 18px;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.section-toolbar,
+.mindmap-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.toolbar-group,
+.toolbar-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.activity-editor {
+  padding: 16px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.card-title-row h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.form-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.activity-form-grid {
+  grid-template-columns: 1fr;
+}
+
+.form-row {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+.classification-row {
+  grid-template-columns: 82px 126px minmax(180px, 260px) minmax(170px, 260px);
+}
+
+.content-row {
+  grid-template-columns: minmax(360px, 1fr) minmax(180px, 240px) 130px 130px;
+}
+
+.topic-field textarea {
+  min-height: 62px;
+}
+
+.subject-detail-field input:disabled {
+  background: #f1f3ef;
+  color: #8c9388;
+}
+
+.wide-label {
+  margin-top: 12px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.form-actions.compact {
+  margin-top: 8px;
+}
+
+.activity-list-section {
+  margin-top: 16px;
+}
+
+.list-controls {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.list-controls label {
+  width: min(360px, 100%);
+}
+
+.list-controls label:last-child {
+  width: 180px;
+}
+
+.table-wrap {
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.activity-table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.activity-table th,
+.activity-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+
+.activity-table th {
+  position: sticky;
+  top: 0;
+  background: #f3f5f1;
+  z-index: 1;
+}
+
+.activity-table .clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.45;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.row-actions button {
+  padding: 5px 8px;
+  min-height: 30px;
+}
+
+.empty-row {
+  color: var(--muted);
+  text-align: center;
+}
+
+.area-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 8px;
+  border: 1px solid var(--line-dark);
+  font-size: 12px;
+  color: #2b3129;
+  white-space: nowrap;
+}
+
+.area-pill.academic {
+  background: var(--academic-bg);
+  border-color: var(--academic-border);
+}
+
+.area-pill.inquiry {
+  background: var(--inquiry-bg);
+  border-color: var(--inquiry-border);
+}
+
+.area-pill.community {
+  background: var(--community-bg);
+  border-color: var(--community-border);
+}
+
+.mindmap-topbar {
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+
+.flow-labels {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flow-labels label {
+  width: 210px;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 4px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eef1eb;
+}
+
+.mode-buttons .mode {
+  border-color: transparent;
+  background: transparent;
+}
+
+.mode-buttons .mode.active {
+  background: #253028;
+  color: #fff;
+}
+
+.inline-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  grid-template-columns: auto auto;
+}
+
+.inline-select select {
+  width: 92px;
+}
+
+.mindmap-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 12px;
+  height: calc(100% - 64px);
+  min-height: 520px;
+}
+
+.canvas-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.mindmap-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+
+.canvas-bg {
+  fill: #fbfcfa;
+}
+
+.placement-hint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #253028;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.keyword-form {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7f8f5;
+}
+
+.keyword-form label + label {
+  margin-top: 8px;
+}
+
+.panel-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 4px;
+  background: #eef1eb;
+  border-radius: 8px;
+}
+
+.panel-tab {
+  border-color: transparent;
+  background: transparent;
+}
+
+.panel-tab.active {
+  background: #fff;
+  border-color: var(--line);
+  font-weight: 700;
+}
+
+.panel-content {
+  display: none;
+  min-height: 0;
+  overflow: auto;
+  padding-top: 10px;
+}
+
+.panel-content.active {
+  display: block;
+}
+
+.side-filters {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.side-activity-list {
+  display: grid;
+  gap: 8px;
+}
+
+.activity-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.activity-card:hover {
+  border-color: #757e73;
+}
+
+.activity-card.placed {
+  opacity: 0.52;
+  cursor: default;
+}
+
+.activity-card.selected {
+  border-color: #253028;
+  box-shadow: 0 0 0 2px rgba(37, 48, 40, 0.15);
+}
+
+.activity-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.activity-card-meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.check-mark {
+  float: right;
+  font-weight: 700;
+  color: #253028;
+}
+
+.detail-content {
+  font-size: 14px;
+}
+
+.detail-content.empty {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.detail-title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.detail-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.detail-list div {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 8px;
+}
+
+.detail-list dt {
+  color: var(--muted);
+}
+
+.detail-list dd {
+  margin: 0;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-form {
+  display: grid;
+  gap: 10px;
+}
+
+.edge-path {
+  fill: none;
+  stroke: #8e9789;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+
+.edge-path.selected {
+  stroke: #253028;
+  stroke-width: 3.5;
+}
+
+.edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  cursor: pointer;
+}
+
+.edge-label {
+  pointer-events: none;
+}
+
+.edge-label div {
+  display: inline-block;
+  max-width: 160px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  color: #444b41;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.node-fo {
+  overflow: visible;
+}
+
+.node-card {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--line-dark);
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(31, 38, 29, 0.12);
+  cursor: grab;
+  user-select: none;
+  color: var(--ink);
+}
+
+.node-card:active {
+  cursor: grabbing;
+}
+
+.node-card.selected {
+  outline: 3px solid rgba(37, 48, 40, 0.28);
+}
+
+.node-card.core {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.node-card.activity,
+.node-card.keyword {
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.node-card.keyword {
+  background: var(--keyword-bg);
+  border-color: var(--keyword-border);
+}
+
+.node-card.academic {
+  background: var(--academic-bg);
+  border-color: var(--academic-border);
+}
+
+.node-card.inquiry {
+  background: var(--inquiry-bg);
+  border-color: var(--inquiry-border);
+}
+
+.node-card.community {
+  background: var(--community-bg);
+  border-color: var(--community-border);
+}
+
+.node-topline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+}
+
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(80, 89, 77, 0.28);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.area-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  flex: 0 0 auto;
+}
+
+.area-dot.academic {
+  background: var(--academic-border);
+}
+
+.area-dot.inquiry {
+  background: var(--inquiry-border);
+}
+
+.area-dot.community {
+  background: var(--community-border);
+}
+
+.star-marks {
+  margin-left: auto;
+  display: flex;
+  gap: 3px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.star-controls {
+  margin-left: auto;
+  display: none;
+  gap: 3px;
+}
+
+.node-card.selected .star-marks {
+  display: none;
+}
+
+.node-card.selected .star-controls {
+  display: flex;
+}
+
+.star-controls button {
+  min-height: 24px;
+  width: 28px;
+  padding: 0;
+  border-radius: 6px;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.star-controls button.active {
+  background: #253028;
+  color: #fff;
+}
+
+.node-title {
+  font-weight: 800;
+  line-height: 1.32;
+  overflow-wrap: anywhere;
+}
+
+.node-card.keyword .node-title {
+  font-size: 16px;
+}
+
+.connect-start .node-card {
+  outline: 4px solid rgba(37, 48, 40, 0.42);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #253028;
+  color: #fff;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  main {
+    height: auto;
+    min-height: calc(100vh - 160px);
+    overflow: visible;
+  }
+
+  .tab-panel {
+    height: auto;
+    min-height: calc(100vh - 170px);
+  }
+
+  .classification-row {
+    grid-template-columns: 90px 140px 1fr 1fr;
+  }
+
+  .content-row {
+    grid-template-columns: 1fr 220px;
+  }
+
+  .mindmap-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .canvas-shell {
+    height: 68vh;
+    min-height: 480px;
+  }
+
+  .side-panel {
+    max-height: 50vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-grid,
+  .classification-row,
+  .content-row,
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .student-bar label,
+  .student-bar label:nth-child(2),
+  .flow-labels label {
+    width: 100%;
+  }
+
+  .student-bar,
+  .flow-labels,
+  .toolbar-scroll,
+  .list-controls {
+    width: 100%;
+  }
+}
+
+@media print {
+  body {
+    overflow: visible;
+    background: #fff;
+  }
+
+  .autosave-banner,
+  .app-header,
+  .tabs,
+  .section-toolbar,
+  .mindmap-topbar,
+  .side-panel,
+  .toast {
+    display: none !important;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div id="autosaveBanner" class="autosave-banner" hidden>
+    <span>이전에 작업하던 내용이 있다.</span>
+    <button type="button" id="restoreAutosaveBtn">복구</button>
+    <button type="button" id="dismissAutosaveBtn" class="ghost">무시</button>
+  </div>
+
+  <header class="app-header">
+    <div class="brand">
+      <h1>생기부 활동 마인드맵</h1>
+      <span class="status" id="saveStatus">준비됨</span>
+    </div>
+    <div class="student-bar">
+      <label>학번 <input id="studentNumber" type="text" inputmode="numeric" autocomplete="off"></label>
+      <label>이름 <input id="studentName" type="text" autocomplete="off"></label>
+      <button type="button" id="loadProjectBtn" title="저장한 프로젝트 파일을 불러온다.">프로젝트 불러오기</button>
+      <button type="button" id="saveProjectBtn" class="primary" title="활동표와 마인드맵 작업 전체를 저장한다.">프로젝트 저장</button>
+      <button type="button" id="resetProjectBtn" class="danger ghost" title="현재 작업과 자동저장을 모두 지운다.">초기화</button>
+      <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="앱 탭">
+    <button type="button" class="tab active" data-tab="activities">활동 입력</button>
+    <button type="button" class="tab" data-tab="mindmap">마인드맵</button>
+  </nav>
+
+  <main>
+    <section id="activitiesTab" class="tab-panel active">
+      <div class="section-toolbar">
+        <div class="toolbar-group">
+          <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">표 복사</button>
+          <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 표 저장</button>
+          <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">표 인쇄</button>
+        </div>
+      </div>
+
+      <section class="card activity-editor" aria-labelledby="activityFormTitle">
+        <div class="card-title-row">
+          <h2 id="activityFormTitle">활동 추가</h2>
+          <span class="form-hint">활동주제 하나가 마인드맵 노드 하나가 된다.</span>
+        </div>
+        <form id="activityForm">
+          <div class="form-grid activity-form-grid">
+            <div class="form-row classification-row">
+            <label class="grade-field">학년
+              <select id="activityGrade" required>
+                <option value="">선택</option>
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+              </select>
+            </label>
+            <label class="category-field">항목
+              <select id="activityCategory" required>
+                <option value="">선택</option>
+                <option value="출결">출결</option>
+                <option value="창체">창체</option>
+                <option value="교과성적">교과성적</option>
+                <option value="교과세특">교과세특</option>
+                <option value="행발">행발</option>
+              </select>
+            </label>
+            <label class="subcategory-field">세부항목
+              <select id="activitySubcategorySelect"></select>
+            </label>
+            <label class="subject-detail-field">추가 과목명
+              <input id="activitySubjectDetail" type="text" autocomplete="off" placeholder="예: 윤리와 사상">
+            </label>
+            </div>
+            <div class="form-row content-row">
+            <label class="topic-field">활동주제
+              <textarea id="activityTopic" rows="2" required placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
+            </label>
+            <label class="format-field">형식
+              <input id="activityFormat" type="text" required placeholder="토론, 보고서, 발표, 반장 등">
+            </label>
+            <label class="area-field">주 평가영역
+              <select id="primaryArea" required>
+                <option value="">선택</option>
+                <option value="학업역량">학업역량</option>
+                <option value="탐구역량">탐구역량</option>
+                <option value="공동체역량">공동체역량</option>
+              </select>
+            </label>
+            <label class="area-field">보조 평가영역
+              <select id="secondaryArea">
+                <option value="">없음</option>
+                <option value="학업역량">학업역량</option>
+                <option value="탐구역량">탐구역량</option>
+                <option value="공동체역량">공동체역량</option>
+              </select>
+            </label>
+            </div>
+          </div>
+          <label class="wide-label memo-field">메모
+            <textarea id="activityMemo" rows="3" placeholder="필요하면 생각, 연결 아이디어, 보완점 등을 적는다."></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit" id="submitActivityBtn" class="primary">활동 추가</button>
+            <button type="button" id="clearActivityBtn" class="ghost">입력 비우기</button>
+            <button type="button" id="cancelEditBtn" class="ghost" hidden>취소</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="activity-list-section">
+        <div class="list-controls">
+          <label>검색
+            <input id="activitySearch" type="search" placeholder="활동주제, 형식, 메모">
+          </label>
+          <label>정렬
+            <select id="activitySort">
+              <option value="input">입력순</option>
+              <option value="grade">학년순</option>
+              <option value="category">항목순</option>
+              <option value="subcategory">세부항목순</option>
+              <option value="primaryArea">주 평가영역순</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table class="activity-table">
+            <thead>
+              <tr>
+                <th>학년</th>
+                <th>항목</th>
+                <th>세부항목</th>
+                <th>추가 과목명</th>
+                <th>활동주제</th>
+                <th>형식</th>
+                <th>주 평가</th>
+                <th>보조 평가</th>
+                <th>메모</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="mindmapTab" class="tab-panel">
+      <div class="mindmap-topbar">
+        <div class="flow-labels">
+          <label>★ 흐름 1 <input id="solidFlowName" type="text" placeholder="예: 심리와 치유"></label>
+          <label>☆ 흐름 2 <input id="outlineFlowName" type="text" placeholder="예: 사회정책과 복지"></label>
+        </div>
+        <div class="toolbar-scroll">
+          <button type="button" id="undoBtn" title="마인드맵 조작을 한 단계 되돌린다.">실행취소</button>
+          <div class="mode-buttons" role="group" aria-label="마인드맵 도구">
+            <button type="button" class="mode active" data-mode="select">선택</button>
+            <button type="button" class="mode" data-mode="connect">연결</button>
+            <button type="button" class="mode" data-mode="group">함께 이동</button>
+            <button type="button" class="mode" data-mode="pan">화면 이동</button>
+          </div>
+          <button type="button" id="zoomOutBtn">-</button>
+          <button type="button" id="zoomResetBtn">100%</button>
+          <button type="button" id="zoomInBtn">+</button>
+          <button type="button" id="fitViewBtn">화면 맞춤</button>
+          <button type="button" id="printFullBtn" title="전체 마인드맵을 A4 가로 한 장에 맞춘다.">전체 1장 출력</button>
+          <button type="button" id="printCurrentBtn" title="현재 보이는 화면을 출력한다.">현재 화면 출력</button>
+          <label class="inline-select">역량별
+            <select id="areaPrintSelect">
+              <option value="core-academic">학업</option>
+              <option value="core-inquiry">탐구</option>
+              <option value="core-community">공동체</option>
+            </select>
+          </label>
+          <button type="button" id="printAreaBtn">출력</button>
+        </div>
+      </div>
+
+      <div class="mindmap-layout">
+        <section class="canvas-shell">
+          <div id="placementHint" class="placement-hint" hidden></div>
+          <svg id="mindmapSvg" class="mindmap-svg" aria-label="마인드맵 캔버스">
+            <rect class="canvas-bg" x="-5000" y="-5000" width="10000" height="10000"></rect>
+            <g id="viewportGroup">
+              <g id="edgesGroup"></g>
+              <g id="edgeLabelsGroup"></g>
+              <g id="nodesGroup"></g>
+            </g>
+          </svg>
+        </section>
+
+        <aside class="side-panel" aria-label="마인드맵 오른쪽 패널">
+          <button type="button" id="showKeywordFormBtn" class="primary full-width">+ 키워드 노드</button>
+          <form id="keywordForm" class="keyword-form" hidden>
+            <label>제목 <input id="keywordTitle" type="text" autocomplete="off"></label>
+            <label>메모 <textarea id="keywordMemo" rows="3"></textarea></label>
+            <div class="form-actions compact">
+              <button type="submit" class="primary">추가</button>
+              <button type="button" id="cancelKeywordBtn" class="ghost">취소</button>
+            </div>
+          </form>
+
+          <div class="panel-tabs">
+            <button type="button" class="panel-tab active" data-panel="activity">활동</button>
+            <button type="button" class="panel-tab" data-panel="detail">상세</button>
+          </div>
+
+          <section id="activityPanel" class="panel-content active">
+            <div class="side-filters">
+              <input id="sideSearch" type="search" placeholder="활동주제, 형식, 메모">
+              <div class="filter-row">
+                <select id="sideGradeFilter">
+                  <option value="all">전체 학년</option>
+                  <option value="1">1학년</option>
+                  <option value="2">2학년</option>
+                  <option value="3">3학년</option>
+                </select>
+                <select id="sidePlacedFilter">
+                  <option value="unplaced">미배치</option>
+                  <option value="all">전체</option>
+                  <option value="placed">배치됨</option>
+                </select>
+              </div>
+            </div>
+            <div id="sideActivityList" class="side-activity-list"></div>
+          </section>
+
+          <section id="detailPanel" class="panel-content">
+            <div id="detailContent" class="detail-content empty">노드나 연결선을 선택하면 상세정보가 표시된다.</div>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script>
+(function () {
+  "use strict";
+
+  const AUTOSAVE_KEY = "student-life-mindmap-autosave-v1";
+  const PROJECT_VERSION = 1;
+  const AREAS = ["학업역량", "탐구역량", "공동체역량"];
+  const CATEGORY_ORDER = ["출결", "창체", "교과성적", "교과세특", "행발"];
+  const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "교양예술"];
+  const AREA_META = {
+    "학업역량": { short: "학업", cls: "academic", color: "#2aa98a", bg: "#ccf3e8" },
+    "탐구역량": { short: "탐구", cls: "inquiry", color: "#df5f91", bg: "#ffd8e8" },
+    "공동체역량": { short: "공동체", cls: "community", color: "#c5a020", bg: "#fff0a8" }
+  };
+  const CORE_NODES = [
+    { id: "core-academic", type: "core", area: "학업역량", label: "학업", x: 180, y: 120 },
+    { id: "core-inquiry", type: "core", area: "탐구역량", label: "탐구", x: 500, y: 120 },
+    { id: "core-community", type: "core", area: "공동체역량", label: "공동체", x: 820, y: 120 }
+  ];
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const XHTML_NS = "http://www.w3.org/1999/xhtml";
+
+  let state = createDefaultState();
+  let editingActivityId = null;
+  let selected = { type: null, id: null };
+  let currentTab = "activities";
+  let currentMode = "select";
+  let pendingActivityId = null;
+  let connectStartId = null;
+  let undoStack = [];
+  let autosaveTimer = null;
+  let toastTimer = null;
+  let dragState = null;
+  let panState = null;
+
+  const els = {};
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  function init() {
+    cacheElements();
+    bindEvents();
+    updateSubcategoryControl();
+    updateSecondaryOptions();
+    renderAll();
+    showAutosavePromptIfNeeded();
+  }
+
+  function cacheElements() {
+    const ids = [
+      "autosaveBanner", "restoreAutosaveBtn", "dismissAutosaveBtn", "saveStatus",
+      "studentNumber", "studentName", "loadProjectBtn", "saveProjectBtn",
+      "resetProjectBtn", "projectFileInput", "activityFormTitle", "activityForm",
+      "activityGrade", "activityCategory", "activitySubcategorySelect",
+      "activitySubjectDetail", "activityFormat",
+      "primaryArea", "secondaryArea", "activityTopic", "activityMemo",
+      "submitActivityBtn", "clearActivityBtn", "cancelEditBtn", "activitySearch",
+      "activitySort", "activityTableBody", "copyTableBtn", "saveTsvBtn",
+      "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "zoomOutBtn",
+      "zoomResetBtn", "zoomInBtn", "fitViewBtn", "printFullBtn", "printCurrentBtn",
+      "areaPrintSelect", "printAreaBtn", "mindmapSvg", "viewportGroup",
+      "edgesGroup", "edgeLabelsGroup", "nodesGroup", "placementHint",
+      "showKeywordFormBtn", "keywordForm", "keywordTitle", "keywordMemo",
+      "cancelKeywordBtn", "sideSearch", "sideGradeFilter", "sidePlacedFilter",
+      "sideActivityList", "detailContent", "activityPanel", "detailPanel", "toast"
+    ];
+    ids.forEach((id) => {
+      els[id] = document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => switchTab(button.dataset.tab));
+    });
+
+    els.studentNumber.addEventListener("input", () => {
+      state.student.number = els.studentNumber.value.trim();
+      scheduleAutosave();
+    });
+    els.studentName.addEventListener("input", () => {
+      state.student.name = els.studentName.value.trim();
+      scheduleAutosave();
+    });
+
+    els.loadProjectBtn.addEventListener("click", requestProjectLoad);
+    els.projectFileInput.addEventListener("change", loadProjectFile);
+    els.saveProjectBtn.addEventListener("click", saveProject);
+    els.resetProjectBtn.addEventListener("click", resetProject);
+
+    els.restoreAutosaveBtn.addEventListener("click", restoreAutosave);
+    els.dismissAutosaveBtn.addEventListener("click", () => {
+      els.autosaveBanner.hidden = true;
+    });
+
+    els.activityCategory.addEventListener("change", updateSubcategoryControl);
+    els.primaryArea.addEventListener("change", updateSecondaryOptions);
+    els.activityForm.addEventListener("submit", submitActivityForm);
+    els.clearActivityBtn.addEventListener("click", clearActivityForm);
+    els.cancelEditBtn.addEventListener("click", cancelActivityEdit);
+    els.activitySearch.addEventListener("input", renderActivityTable);
+    els.activitySort.addEventListener("change", renderActivityTable);
+    els.copyTableBtn.addEventListener("click", copyActivityTable);
+    els.saveTsvBtn.addEventListener("click", saveActivityTsv);
+    els.printTableBtn.addEventListener("click", printActivityTable);
+
+    els.solidFlowName.addEventListener("input", () => {
+      state.mindmap.starLabels.solid = els.solidFlowName.value;
+      scheduleAutosave();
+    });
+    els.outlineFlowName.addEventListener("input", () => {
+      state.mindmap.starLabels.outline = els.outlineFlowName.value;
+      scheduleAutosave();
+    });
+
+    document.querySelectorAll(".mode").forEach((button) => {
+      button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
+    els.undoBtn.addEventListener("click", undoMindmap);
+    els.zoomOutBtn.addEventListener("click", () => setZoom(state.mindmap.viewport.scale - 0.1));
+    els.zoomResetBtn.addEventListener("click", () => {
+      state.mindmap.viewport.scale = 1;
+      renderMindmap();
+      scheduleAutosave();
+    });
+    els.zoomInBtn.addEventListener("click", () => setZoom(state.mindmap.viewport.scale + 0.1));
+    els.fitViewBtn.addEventListener("click", fitView);
+    els.printFullBtn.addEventListener("click", () => printMindmap("full"));
+    els.printCurrentBtn.addEventListener("click", () => printMindmap("current"));
+    els.printAreaBtn.addEventListener("click", () => printMindmap("area", els.areaPrintSelect.value));
+
+    els.mindmapSvg.addEventListener("pointerdown", onSvgPointerDown);
+    els.mindmapSvg.addEventListener("dragover", (event) => event.preventDefault());
+    els.mindmapSvg.addEventListener("drop", onActivityDrop);
+    window.addEventListener("pointermove", onWindowPointerMove);
+    window.addEventListener("pointerup", onWindowPointerUp);
+
+    els.showKeywordFormBtn.addEventListener("click", () => {
+      els.keywordForm.hidden = !els.keywordForm.hidden;
+      if (!els.keywordForm.hidden) els.keywordTitle.focus();
+    });
+    els.keywordForm.addEventListener("submit", submitKeywordForm);
+    els.cancelKeywordBtn.addEventListener("click", clearKeywordForm);
+
+    document.querySelectorAll(".panel-tab").forEach((button) => {
+      button.addEventListener("click", () => switchPanel(button.dataset.panel));
+    });
+    els.sideSearch.addEventListener("input", renderSideActivityList);
+    els.sideGradeFilter.addEventListener("change", renderSideActivityList);
+    els.sidePlacedFilter.addEventListener("change", renderSideActivityList);
+  }
+
+  function createDefaultState() {
+    return {
+      version: PROJECT_VERSION,
+      student: { number: "", name: "" },
+      counters: { "1": 0, "2": 0, "3": 0 },
+      activities: [],
+      mindmap: {
+        nodes: CORE_NODES.map((node) => ({ ...node })),
+        edges: [],
+        starLabels: { solid: "", outline: "" },
+        viewport: { offsetX: 48, offsetY: 52, scale: 1 }
+      }
+    };
+  }
+
+  function renderAll() {
+    syncInputsFromState();
+    renderActivityTable();
+    renderSideActivityList();
+    renderMindmap();
+    renderDetail();
+    updateUndoButton();
+  }
+
+  function syncInputsFromState() {
+    els.studentNumber.value = state.student.number || "";
+    els.studentName.value = state.student.name || "";
+    els.solidFlowName.value = state.mindmap.starLabels.solid || "";
+    els.outlineFlowName.value = state.mindmap.starLabels.outline || "";
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.classList.toggle("active", button.dataset.tab === tab);
+    });
+    document.querySelectorAll(".tab-panel").forEach((panel) => {
+      panel.classList.toggle("active", panel.id === `${tab}Tab`);
+    });
+    if (tab === "mindmap") {
+      setTimeout(renderMindmap, 0);
+    }
+  }
+
+  function switchPanel(panel) {
+    document.querySelectorAll(".panel-tab").forEach((button) => {
+      button.classList.toggle("active", button.dataset.panel === panel);
+    });
+    els.activityPanel.classList.toggle("active", panel === "activity");
+    els.detailPanel.classList.toggle("active", panel === "detail");
+  }
+
+  function updateSubcategoryControl() {
+    const category = els.activityCategory.value;
+    els.activitySubcategorySelect.innerHTML = "";
+    let options = [""];
+    let disabled = false;
+    if (category === "창체") {
+      options = ["", "자율", "동아리", "진로", "봉사"];
+    } else if (isCourseCategory(category)) {
+      options = ["", "국어", "수학", "영어", "사회", "교양예술"];
+    } else if (category === "출결" || category === "행발") {
+      options = ["없음"];
+      disabled = true;
+    }
+    options.forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value || "선택";
+      els.activitySubcategorySelect.appendChild(option);
+    });
+    els.activitySubcategorySelect.disabled = disabled;
+    if (disabled) els.activitySubcategorySelect.value = "없음";
+    els.activitySubjectDetail.disabled = !isCourseCategory(category);
+    els.activitySubjectDetail.placeholder = isCourseCategory(category) ? "예: 윤리와 사상" : "교과 항목에서 입력";
+    if (!isCourseCategory(category)) els.activitySubjectDetail.value = "";
+  }
+
+  function updateSecondaryOptions() {
+    const primary = els.primaryArea.value;
+    Array.from(els.secondaryArea.options).forEach((option) => {
+      option.disabled = option.value && option.value === primary;
+    });
+    if (els.secondaryArea.value === primary) {
+      els.secondaryArea.value = "";
+    }
+  }
+
+  function submitActivityForm(event) {
+    event.preventDefault();
+    const activity = readActivityForm();
+    if (!activity) return;
+
+    const duplicate = state.activities.find((item) => {
+      return item.topic === activity.topic && item.id !== editingActivityId;
+    });
+    if (duplicate && !confirm("완전히 같은 활동주제가 있다. 그래도 저장할까?")) {
+      return;
+    }
+
+    if (editingActivityId) {
+      const index = state.activities.findIndex((item) => item.id === editingActivityId);
+      if (index >= 0) {
+        state.activities[index] = { ...state.activities[index], ...activity };
+        showToast("활동을 수정했다.");
+      }
+    } else {
+      const id = createId("act");
+      const sequence = nextHiddenSequence(activity.grade);
+      state.activities.push({
+        id,
+        sequence,
+        createdAt: Date.now(),
+        ...activity
+      });
+      showToast("활동을 추가했다.");
+    }
+    clearActivityForm();
+    renderActivityTable();
+    renderSideActivityList();
+    renderMindmap();
+    renderDetail();
+    scheduleAutosave();
+  }
+
+  function readActivityForm() {
+    const grade = els.activityGrade.value;
+    const category = els.activityCategory.value;
+    let subcategory = els.activitySubcategorySelect.value;
+    if (category === "출결" || category === "행발") subcategory = "없음";
+    const subjectDetail = isCourseCategory(category) ? els.activitySubjectDetail.value.trim() : "";
+    const topic = els.activityTopic.value.trim();
+    const format = els.activityFormat.value.trim();
+    const primaryArea = els.primaryArea.value;
+    const secondaryArea = els.secondaryArea.value;
+    const memo = els.activityMemo.value.trim();
+
+    if (!grade) return showValidation("학년을 선택해야 한다.");
+    if (!category) return showValidation("항목을 선택해야 한다.");
+    if ((category === "창체" || isCourseCategory(category)) && !subcategory) {
+      return showValidation("세부항목을 입력해야 한다.");
+    }
+    if (!topic) return showValidation("활동주제를 입력해야 한다.");
+    if (!format) return showValidation("형식을 입력해야 한다.");
+    if (!primaryArea) return showValidation("주 평가영역을 선택해야 한다.");
+    if (secondaryArea && secondaryArea === primaryArea) {
+      return showValidation("보조 평가영역은 주 평가영역과 다르게 선택해야 한다.");
+    }
+    return { grade, category, subcategory, subjectDetail, topic, format, primaryArea, secondaryArea, memo };
+  }
+
+  function showValidation(message) {
+    showToast(message);
+    return null;
+  }
+
+  function nextHiddenSequence(grade) {
+    state.counters[grade] = (state.counters[grade] || 0) + 1;
+    return `${grade}-${String(state.counters[grade]).padStart(2, "0")}`;
+  }
+
+  function editActivity(id) {
+    const activity = getActivity(id);
+    if (!activity) return;
+    editingActivityId = id;
+    els.activityFormTitle.textContent = "활동 수정";
+    els.submitActivityBtn.textContent = "수정 저장";
+    els.clearActivityBtn.hidden = true;
+    els.cancelEditBtn.hidden = false;
+    els.activityGrade.value = activity.grade;
+    els.activityCategory.value = activity.category;
+    updateSubcategoryControl();
+    els.activitySubcategorySelect.value = activity.subcategory || "";
+    els.activitySubjectDetail.value = activity.subjectDetail || "";
+    els.activityFormat.value = activity.format;
+    els.primaryArea.value = activity.primaryArea;
+    updateSecondaryOptions();
+    els.secondaryArea.value = activity.secondaryArea || "";
+    els.activityTopic.value = activity.topic;
+    els.activityMemo.value = activity.memo || "";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function clearActivityForm() {
+    editingActivityId = null;
+    els.activityForm.reset();
+    els.activityFormTitle.textContent = "활동 추가";
+    els.submitActivityBtn.textContent = "활동 추가";
+    els.clearActivityBtn.hidden = false;
+    els.cancelEditBtn.hidden = true;
+    updateSubcategoryControl();
+    updateSecondaryOptions();
+  }
+
+  function cancelActivityEdit() {
+    clearActivityForm();
+  }
+
+  function deleteActivity(id) {
+    const activity = getActivity(id);
+    if (!activity) return;
+    if (!confirm("이 활동을 삭제할까? 마인드맵에 배치된 노드와 연결선도 함께 삭제된다.")) return;
+    state.activities = state.activities.filter((item) => item.id !== id);
+    const node = getActivityNode(id);
+    if (node) {
+      state.mindmap.nodes = state.mindmap.nodes.filter((item) => item.id !== node.id);
+      removeEdgesForNode(node.id);
+    }
+    if (editingActivityId === id) clearActivityForm();
+    if (selected.type === "node" && selected.id === node?.id) selected = { type: null, id: null };
+    renderAll();
+    scheduleAutosave();
+    showToast("활동을 삭제했다.");
+  }
+
+  function renderActivityTable() {
+    const activities = getFilteredSortedActivities();
+    els.activityTableBody.innerHTML = "";
+    if (activities.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 10;
+      td.className = "empty-row";
+      td.textContent = "입력한 활동이 없다.";
+      tr.appendChild(td);
+      els.activityTableBody.appendChild(tr);
+      return;
+    }
+    activities.forEach((activity) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(activity.grade)}학년</td>
+        <td>${escapeHtml(activity.category)}</td>
+        <td>${escapeHtml(activity.subcategory || "")}</td>
+        <td>${escapeHtml(activity.subjectDetail || "")}</td>
+        <td><div class="clamp">${escapeHtml(activity.topic)}</div></td>
+        <td><div class="clamp">${escapeHtml(activity.format)}</div></td>
+        <td>${areaPill(activity.primaryArea)}</td>
+        <td>${activity.secondaryArea ? areaPill(activity.secondaryArea) : ""}</td>
+        <td><div class="clamp">${escapeHtml(activity.memo || "")}</div></td>
+        <td><div class="row-actions">
+          <button type="button" data-action="edit" data-id="${activity.id}">수정</button>
+          <button type="button" class="danger ghost" data-action="delete" data-id="${activity.id}">삭제</button>
+        </div></td>
+      `;
+      tr.querySelector('[data-action="edit"]').addEventListener("click", () => editActivity(activity.id));
+      tr.querySelector('[data-action="delete"]').addEventListener("click", () => deleteActivity(activity.id));
+      els.activityTableBody.appendChild(tr);
+    });
+  }
+
+  function getFilteredSortedActivities() {
+    const query = normalize(els.activitySearch.value);
+    let activities = state.activities.filter((activity) => {
+      if (!query) return true;
+      return [activity.topic, activity.format, activity.memo].some((value) => normalize(value).includes(query));
+    });
+    const sort = els.activitySort.value;
+    activities = activities.slice().sort((a, b) => {
+      if (sort === "input") return a.createdAt - b.createdAt;
+      if (sort === "grade") return byValue(a.grade, b.grade) || a.createdAt - b.createdAt;
+      if (sort === "category") return categoryRank(a.category) - categoryRank(b.category) || a.createdAt - b.createdAt;
+      if (sort === "subcategory") return byValue(a.subcategory, b.subcategory) || a.createdAt - b.createdAt;
+      if (sort === "primaryArea") return byValue(a.primaryArea, b.primaryArea) || a.createdAt - b.createdAt;
+      return 0;
+    });
+    return activities;
+  }
+
+  function renderSideActivityList() {
+    const query = normalize(els.sideSearch.value);
+    const grade = els.sideGradeFilter.value;
+    const placedFilter = els.sidePlacedFilter.value;
+    const activities = state.activities.filter((activity) => {
+      const placed = Boolean(getActivityNode(activity.id));
+      if (grade !== "all" && activity.grade !== grade) return false;
+      if (placedFilter === "placed" && !placed) return false;
+      if (placedFilter === "unplaced" && placed) return false;
+      if (!query) return true;
+      return [activity.topic, activity.format, activity.memo].some((value) => normalize(value).includes(query));
+    });
+    els.sideActivityList.innerHTML = "";
+    if (activities.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "detail-content empty";
+      empty.textContent = "표시할 활동이 없다.";
+      els.sideActivityList.appendChild(empty);
+      return;
+    }
+    activities.forEach((activity) => {
+      const placed = Boolean(getActivityNode(activity.id));
+      const card = document.createElement("div");
+      card.className = `activity-card${placed ? " placed" : ""}${pendingActivityId === activity.id ? " selected" : ""}`;
+      card.draggable = !placed;
+      card.innerHTML = `
+        ${placed ? '<span class="check-mark">✓</span>' : ""}
+        <div class="activity-card-title">${escapeHtml(activity.topic)}</div>
+        <div class="activity-card-meta">${activity.grade}학년 · ${escapeHtml(activity.category)}${activityPath(activity) ? ` · ${escapeHtml(activityPath(activity))}` : ""} · ${AREA_META[activity.primaryArea].short}</div>
+      `;
+      card.addEventListener("click", () => {
+        if (placed) {
+          const node = getActivityNode(activity.id);
+          selected = { type: "node", id: node.id };
+          switchPanel("detail");
+          renderMindmap();
+          renderDetail();
+          return;
+        }
+        pendingActivityId = pendingActivityId === activity.id ? null : activity.id;
+        updatePlacementHint();
+        renderSideActivityList();
+      });
+      card.addEventListener("dragstart", (event) => {
+        if (placed) return;
+        event.dataTransfer.setData("text/plain", activity.id);
+        event.dataTransfer.effectAllowed = "copy";
+      });
+      els.sideActivityList.appendChild(card);
+    });
+  }
+
+  function areaPill(area) {
+    if (!area) return "";
+    const meta = AREA_META[area];
+    return `<span class="area-pill ${meta.cls}">${escapeHtml(area)}</span>`;
+  }
+
+  function setMode(mode) {
+    currentMode = mode;
+    connectStartId = null;
+    pendingActivityId = null;
+    document.querySelectorAll(".mode").forEach((button) => {
+      button.classList.toggle("active", button.dataset.mode === mode);
+    });
+    updatePlacementHint();
+    renderSideActivityList();
+    renderMindmap();
+  }
+
+  function renderMindmap() {
+    const viewport = state.mindmap.viewport;
+    els.viewportGroup.setAttribute("transform", `translate(${viewport.offsetX} ${viewport.offsetY}) scale(${viewport.scale})`);
+    els.edgesGroup.innerHTML = "";
+    els.edgeLabelsGroup.innerHTML = "";
+    els.nodesGroup.innerHTML = "";
+
+    state.mindmap.edges.forEach((edge) => renderEdge(edge));
+    state.mindmap.nodes.forEach((node) => renderNode(node));
+    updatePlacementHint();
+    updateUndoButton();
+  }
+
+  function renderEdge(edge) {
+    const from = getNode(edge.from);
+    const to = getNode(edge.to);
+    if (!from || !to) return;
+    const p1 = nodeCenter(from);
+    const p2 = nodeCenter(to);
+    const dx = Math.abs(p2.x - p1.x);
+    const curve = Math.max(60, dx * 0.35);
+    const c1x = p1.x + (p2.x >= p1.x ? curve : -curve);
+    const c2x = p2.x - (p2.x >= p1.x ? curve : -curve);
+    const d = `M ${p1.x} ${p1.y} C ${c1x} ${p1.y}, ${c2x} ${p2.y}, ${p2.x} ${p2.y}`;
+    const isSelected = selected.type === "edge" && selected.id === edge.id;
+
+    const visible = document.createElementNS(SVG_NS, "path");
+    visible.setAttribute("class", `edge-path${isSelected ? " selected" : ""}`);
+    visible.setAttribute("d", d);
+    els.edgesGroup.appendChild(visible);
+
+    const hit = document.createElementNS(SVG_NS, "path");
+    hit.setAttribute("class", "edge-hit");
+    hit.setAttribute("d", d);
+    hit.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selected = { type: "edge", id: edge.id };
+      switchPanel("detail");
+      renderMindmap();
+      renderDetail();
+    });
+    els.edgesGroup.appendChild(hit);
+
+    if (edge.label) {
+      const mid = cubicPoint(p1, { x: c1x, y: p1.y }, { x: c2x, y: p2.y }, p2, 0.5);
+      const fo = document.createElementNS(SVG_NS, "foreignObject");
+      fo.setAttribute("class", "edge-label");
+      fo.setAttribute("x", mid.x - 80);
+      fo.setAttribute("y", mid.y - 16);
+      fo.setAttribute("width", 160);
+      fo.setAttribute("height", 42);
+      const div = document.createElementNS(XHTML_NS, "div");
+      div.textContent = edge.label;
+      fo.appendChild(div);
+      els.edgeLabelsGroup.appendChild(fo);
+    }
+  }
+
+  function renderNode(node) {
+    const dim = nodeDimensions(node);
+    const fo = document.createElementNS(SVG_NS, "foreignObject");
+    fo.setAttribute("class", `node-fo${connectStartId === node.id ? " connect-start" : ""}`);
+    fo.setAttribute("x", node.x);
+    fo.setAttribute("y", node.y);
+    fo.setAttribute("width", dim.w);
+    fo.setAttribute("height", dim.h);
+    fo.dataset.nodeId = node.id;
+
+    const div = document.createElementNS(XHTML_NS, "div");
+    div.className = nodeClass(node);
+    if (selected.type === "node" && selected.id === node.id) div.classList.add("selected");
+    div.dataset.nodeId = node.id;
+    div.innerHTML = nodeInnerHtml(node);
+    div.addEventListener("pointerdown", (event) => onNodePointerDown(event, node.id));
+    div.addEventListener("click", (event) => onNodeClick(event, node.id));
+
+    div.querySelectorAll("[data-star]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleNodeStar(node.id, button.dataset.star);
+      });
+    });
+
+    fo.appendChild(div);
+    els.nodesGroup.appendChild(fo);
+  }
+
+  function nodeClass(node) {
+    if (node.type === "core") {
+      return `node-card core ${AREA_META[node.area].cls}`;
+    }
+    if (node.type === "keyword") {
+      return "node-card keyword";
+    }
+    const activity = getActivity(node.activityId);
+    const cls = activity ? AREA_META[activity.primaryArea].cls : "";
+    return `node-card activity ${cls}`;
+  }
+
+  function nodeInnerHtml(node) {
+    if (node.type === "core") {
+      return `<div>${escapeHtml(node.label)}</div>`;
+    }
+    const stars = starMarks(node);
+    const controls = starControls(node);
+    if (node.type === "keyword") {
+      return `
+        <div class="node-topline">
+          <span class="star-marks">${stars}</span>
+          <span class="star-controls">${controls}</span>
+        </div>
+        <div class="node-title">${escapeHtml(node.title)}</div>
+      `;
+    }
+    const activity = getActivity(node.activityId);
+    if (!activity) return "";
+    const dot = activity.secondaryArea ? `<span class="area-dot ${AREA_META[activity.secondaryArea].cls}" title="${escapeHtml(activity.secondaryArea)}"></span>` : "";
+    return `
+      <div class="node-topline">
+        <span class="grade-badge">${activity.grade}학년</span>
+        ${dot}
+        <span class="star-marks">${stars}</span>
+        <span class="star-controls">${controls}</span>
+      </div>
+      <div class="node-title">${escapeHtml(activity.topic)}</div>
+    `;
+  }
+
+  function starMarks(node) {
+    const solid = node.starSolid ? "★" : "";
+    const outline = node.starOutline ? "☆" : "";
+    return `${solid}${outline}`;
+  }
+
+  function starControls(node) {
+    const solid = node.starSolid ? " active" : "";
+    const outline = node.starOutline ? " active" : "";
+    return `
+      <button type="button" class="${solid.trim()}" data-star="solid" title="★ 흐름 표시">★</button>
+      <button type="button" class="${outline.trim()}" data-star="outline" title="☆ 흐름 표시">☆</button>
+    `;
+  }
+
+  function nodeDimensions(node) {
+    if (node.type === "core") return { w: 112, h: 112 };
+    if (node.type === "keyword") {
+      const lines = Math.max(1, Math.ceil((node.title || "").length / 14));
+      return { w: 210, h: Math.min(150, 58 + lines * 22) };
+    }
+    const activity = getActivity(node.activityId);
+    const len = activity ? activity.topic.length : 20;
+    const lines = Math.max(2, Math.ceil(len / 18));
+    return { w: 260, h: Math.min(220, 60 + lines * 22) };
+  }
+
+  function onNodePointerDown(event, nodeId) {
+    if (event.button !== 0 || event.target.closest("button")) return;
+    event.stopPropagation();
+    const node = getNode(nodeId);
+    if (!node) return;
+    if (currentMode === "connect") return;
+    selected = { type: "node", id: nodeId };
+    switchPanel("detail");
+    renderDetail();
+
+    const world = clientToWorld(event.clientX, event.clientY);
+    const movingIds = currentMode === "group" ? connectedComponent(nodeId) : [nodeId];
+    dragState = {
+      pointerId: event.pointerId,
+      start: world,
+      ids: movingIds,
+      before: cloneMindmap(),
+      moved: false,
+      original: movingIds.map((id) => {
+        const item = getNode(id);
+        return { id, x: item.x, y: item.y };
+      })
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function onNodeClick(event, nodeId) {
+    if (event.target.closest("button")) return;
+    event.stopPropagation();
+    if (dragState?.moved) return;
+    if (currentMode === "connect") {
+      handleConnectClick(nodeId);
+      return;
+    }
+    selected = { type: "node", id: nodeId };
+    switchPanel("detail");
+    renderMindmap();
+    renderDetail();
+  }
+
+  function handleConnectClick(nodeId) {
+    if (!connectStartId) {
+      connectStartId = nodeId;
+      selected = { type: "node", id: nodeId };
+      renderMindmap();
+      renderDetail();
+      return;
+    }
+    if (connectStartId === nodeId) {
+      connectStartId = null;
+      showToast("연결을 취소했다.");
+      renderMindmap();
+      return;
+    }
+    const from = getNode(connectStartId);
+    const to = getNode(nodeId);
+    if (from?.type === "core" && to?.type === "core") {
+      showToast("중심 노드끼리는 연결하지 않는다.");
+      return;
+    }
+    if (edgeExists(connectStartId, nodeId)) {
+      showToast("이미 연결된 노드다.");
+      return;
+    }
+    pushUndo();
+    state.mindmap.edges.push({ id: createId("edge"), from: connectStartId, to: nodeId, label: "" });
+    connectStartId = null;
+    selected = { type: "edge", id: state.mindmap.edges[state.mindmap.edges.length - 1].id };
+    switchPanel("detail");
+    renderMindmap();
+    renderDetail();
+    scheduleAutosave();
+  }
+
+  function onSvgPointerDown(event) {
+    const isBlank = event.target === els.mindmapSvg || event.target.classList.contains("canvas-bg");
+    if (!isBlank) return;
+    if (pendingActivityId && currentMode !== "pan") {
+      const world = clientToWorld(event.clientX, event.clientY);
+      placeActivityNode(pendingActivityId, world.x, world.y);
+      return;
+    }
+    if (currentMode === "pan") {
+      panState = {
+        startX: event.clientX,
+        startY: event.clientY,
+        offsetX: state.mindmap.viewport.offsetX,
+        offsetY: state.mindmap.viewport.offsetY
+      };
+      return;
+    }
+    selected = { type: null, id: null };
+    connectStartId = null;
+    renderMindmap();
+    renderDetail();
+  }
+
+  function onWindowPointerMove(event) {
+    if (dragState) {
+      const world = clientToWorld(event.clientX, event.clientY);
+      const dx = world.x - dragState.start.x;
+      const dy = world.y - dragState.start.y;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) dragState.moved = true;
+      dragState.original.forEach((item) => {
+        const node = getNode(item.id);
+        if (node) {
+          node.x = item.x + dx;
+          node.y = item.y + dy;
+        }
+      });
+      renderMindmap();
+      return;
+    }
+    if (panState) {
+      state.mindmap.viewport.offsetX = panState.offsetX + event.clientX - panState.startX;
+      state.mindmap.viewport.offsetY = panState.offsetY + event.clientY - panState.startY;
+      renderMindmap();
+    }
+  }
+
+  function onWindowPointerUp() {
+    if (dragState) {
+      if (dragState.moved) {
+        commitUndo(dragState.before);
+        scheduleAutosave();
+      }
+      dragState = null;
+    }
+    if (panState) {
+      panState = null;
+      scheduleAutosave();
+    }
+  }
+
+  function onActivityDrop(event) {
+    event.preventDefault();
+    const id = event.dataTransfer.getData("text/plain");
+    if (!id || getActivityNode(id)) return;
+    const world = clientToWorld(event.clientX, event.clientY);
+    placeActivityNode(id, world.x, world.y);
+  }
+
+  function placeActivityNode(activityId, x, y) {
+    if (getActivityNode(activityId)) {
+      showToast("이미 배치된 활동이다.");
+      return;
+    }
+    const activity = getActivity(activityId);
+    if (!activity) return;
+    pushUndo();
+    state.mindmap.nodes.push({
+      id: createId("node"),
+      type: "activity",
+      activityId,
+      x,
+      y,
+      starSolid: false,
+      starOutline: false
+    });
+    pendingActivityId = null;
+    selected = { type: "node", id: state.mindmap.nodes[state.mindmap.nodes.length - 1].id };
+    switchPanel("detail");
+    renderSideActivityList();
+    renderMindmap();
+    renderDetail();
+    scheduleAutosave();
+  }
+
+  function toggleNodeStar(nodeId, kind) {
+    const node = getNode(nodeId);
+    if (!node || node.type === "core") return;
+    pushUndo();
+    if (kind === "solid") node.starSolid = !node.starSolid;
+    if (kind === "outline") node.starOutline = !node.starOutline;
+    renderMindmap();
+    renderDetail();
+    scheduleAutosave();
+  }
+
+  function submitKeywordForm(event) {
+    event.preventDefault();
+    const title = els.keywordTitle.value.trim();
+    const memo = els.keywordMemo.value.trim();
+    if (!title) {
+      showToast("키워드 제목을 입력해야 한다.");
+      return;
+    }
+    const center = viewportCenterWorld();
+    pushUndo();
+    const node = {
+      id: createId("key"),
+      type: "keyword",
+      title,
+      memo,
+      x: center.x - 105,
+      y: center.y - 45,
+      starSolid: false,
+      starOutline: false
+    };
+    state.mindmap.nodes.push(node);
+    selected = { type: "node", id: node.id };
+    clearKeywordForm();
+    switchPanel("detail");
+    renderMindmap();
+    renderDetail();
+    scheduleAutosave();
+  }
+
+  function clearKeywordForm() {
+    els.keywordForm.reset();
+    els.keywordForm.hidden = true;
+  }
+
+  function renderDetail() {
+    if (!selected.type) {
+      els.detailContent.className = "detail-content empty";
+      els.detailContent.textContent = "노드나 연결선을 선택하면 상세정보가 표시된다.";
+      return;
+    }
+    if (selected.type === "edge") {
+      renderEdgeDetail();
+      return;
+    }
+    const node = getNode(selected.id);
+    if (!node) {
+      selected = { type: null, id: null };
+      renderDetail();
+      return;
+    }
+    if (node.type === "core") renderCoreDetail(node);
+    if (node.type === "activity") renderActivityNodeDetail(node);
+    if (node.type === "keyword") renderKeywordDetail(node);
+  }
+
+  function renderActivityNodeDetail(node) {
+    const activity = getActivity(node.activityId);
+    if (!activity) return;
+    els.detailContent.className = "detail-content";
+    els.detailContent.innerHTML = `
+      <h3 class="detail-title">${escapeHtml(activity.topic)}</h3>
+      <dl class="detail-list">
+        ${detailRow("학년", `${activity.grade}학년`)}
+        ${detailRow("항목", activity.category)}
+        ${detailRow("세부항목", activity.subcategory || "")}
+        ${detailRow("추가 과목명", activity.subjectDetail || "")}
+        ${detailRow("형식", activity.format)}
+        ${detailRow("주 평가", activity.primaryArea)}
+        ${detailRow("보조 평가", activity.secondaryArea || "")}
+        ${detailRow("메모", activity.memo || "")}
+      </dl>
+      <div class="detail-actions">
+        <button type="button" id="removeActivityNodeBtn" class="danger ghost">마인드맵에서 제거</button>
+      </div>
+    `;
+    document.getElementById("removeActivityNodeBtn").addEventListener("click", () => {
+      pushUndo();
+      state.mindmap.nodes = state.mindmap.nodes.filter((item) => item.id !== node.id);
+      removeEdgesForNode(node.id);
+      selected = { type: null, id: null };
+      renderAll();
+      scheduleAutosave();
+    });
+  }
+
+  function renderCoreDetail(node) {
+    els.detailContent.className = "detail-content";
+    els.detailContent.innerHTML = `
+      <h3 class="detail-title">${escapeHtml(node.label)}</h3>
+      <dl class="detail-list">
+        ${detailRow("중심", `${node.label} 중심 노드`)}
+      </dl>
+      <div class="detail-actions">
+        <button type="button" id="resetCorePositionBtn">위치 초기화</button>
+      </div>
+    `;
+    document.getElementById("resetCorePositionBtn").addEventListener("click", () => {
+      const original = CORE_NODES.find((item) => item.id === node.id);
+      if (!original) return;
+      pushUndo();
+      node.x = original.x;
+      node.y = original.y;
+      renderMindmap();
+      renderDetail();
+      scheduleAutosave();
+    });
+  }
+
+  function renderKeywordDetail(node) {
+    els.detailContent.className = "detail-content";
+    els.detailContent.innerHTML = `
+      <h3 class="detail-title">${escapeHtml(node.title)}</h3>
+      <dl class="detail-list">
+        ${detailRow("종류", "키워드 노드")}
+        ${detailRow("메모", node.memo || "")}
+      </dl>
+      <div class="detail-actions">
+        <button type="button" id="editKeywordBtn">제목/메모 수정</button>
+        <button type="button" id="deleteKeywordBtn" class="danger ghost">키워드 삭제</button>
+      </div>
+    `;
+    document.getElementById("editKeywordBtn").addEventListener("click", () => renderKeywordEditForm(node));
+    document.getElementById("deleteKeywordBtn").addEventListener("click", () => {
+      if (!confirm("이 키워드 노드를 삭제할까? 연결된 선도 함께 삭제된다.")) return;
+      pushUndo();
+      state.mindmap.nodes = state.mindmap.nodes.filter((item) => item.id !== node.id);
+      removeEdgesForNode(node.id);
+      selected = { type: null, id: null };
+      renderAll();
+      scheduleAutosave();
+    });
+  }
+
+  function renderKeywordEditForm(node) {
+    els.detailContent.innerHTML = `
+      <form id="keywordEditForm" class="detail-form">
+        <label>제목 <input id="keywordEditTitle" type="text" value="${escapeAttribute(node.title)}"></label>
+        <label>메모 <textarea id="keywordEditMemo" rows="4">${escapeHtml(node.memo || "")}</textarea></label>
+        <div class="detail-actions">
+          <button type="submit" class="primary">저장</button>
+          <button type="button" id="cancelKeywordEditBtn" class="ghost">취소</button>
+        </div>
+      </form>
+    `;
+    document.getElementById("keywordEditForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const title = document.getElementById("keywordEditTitle").value.trim();
+      const memo = document.getElementById("keywordEditMemo").value.trim();
+      if (!title) {
+        showToast("키워드 제목을 입력해야 한다.");
+        return;
+      }
+      pushUndo();
+      node.title = title;
+      node.memo = memo;
+      renderMindmap();
+      renderDetail();
+      scheduleAutosave();
+    });
+    document.getElementById("cancelKeywordEditBtn").addEventListener("click", () => renderKeywordDetail(node));
+  }
+
+  function renderEdgeDetail() {
+    const edge = getEdge(selected.id);
+    if (!edge) {
+      selected = { type: null, id: null };
+      renderDetail();
+      return;
+    }
+    const fromLabel = nodeLabel(getNode(edge.from));
+    const toLabel = nodeLabel(getNode(edge.to));
+    els.detailContent.className = "detail-content";
+    els.detailContent.innerHTML = `
+      <h3 class="detail-title">연결</h3>
+      <dl class="detail-list">
+        ${detailRow("시작", fromLabel)}
+        ${detailRow("끝", toLabel)}
+      </dl>
+      <form id="edgeEditForm" class="detail-form">
+        <label>설명 <textarea id="edgeLabelInput" rows="3" placeholder="선택 입력">${escapeHtml(edge.label || "")}</textarea></label>
+        <div class="detail-actions">
+          <button type="submit" class="primary">설명 저장</button>
+          <button type="button" id="deleteEdgeBtn" class="danger ghost">연결 삭제</button>
+        </div>
+      </form>
+    `;
+    document.getElementById("edgeEditForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      pushUndo();
+      edge.label = document.getElementById("edgeLabelInput").value.trim();
+      renderMindmap();
+      renderDetail();
+      scheduleAutosave();
+    });
+    document.getElementById("deleteEdgeBtn").addEventListener("click", () => {
+      pushUndo();
+      state.mindmap.edges = state.mindmap.edges.filter((item) => item.id !== edge.id);
+      selected = { type: null, id: null };
+      renderMindmap();
+      renderDetail();
+      scheduleAutosave();
+    });
+  }
+
+  function detailRow(label, value) {
+    return `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || "-")}</dd></div>`;
+  }
+
+  function pushUndo() {
+    commitUndo(cloneMindmap());
+  }
+
+  function commitUndo(snapshot) {
+    undoStack.push(snapshot);
+    if (undoStack.length > 80) undoStack.shift();
+    updateUndoButton();
+  }
+
+  function undoMindmap() {
+    const snapshot = undoStack.pop();
+    if (!snapshot) return;
+    state.mindmap = snapshot;
+    selected = { type: null, id: null };
+    connectStartId = null;
+    pendingActivityId = null;
+    syncInputsFromState();
+    renderSideActivityList();
+    renderMindmap();
+    renderDetail();
+    scheduleAutosave();
+  }
+
+  function updateUndoButton() {
+    els.undoBtn.disabled = undoStack.length === 0;
+  }
+
+  function cloneMindmap() {
+    return JSON.parse(JSON.stringify(state.mindmap));
+  }
+
+  function setZoom(value) {
+    state.mindmap.viewport.scale = clamp(Number(value.toFixed(2)), 0.35, 2.2);
+    renderMindmap();
+    scheduleAutosave();
+  }
+
+  function fitView() {
+    const bbox = nodesBoundingBox(state.mindmap.nodes);
+    const rect = els.mindmapSvg.getBoundingClientRect();
+    const padding = 70;
+    const scale = Math.min(
+      (rect.width - padding * 2) / Math.max(1, bbox.w),
+      (rect.height - padding * 2) / Math.max(1, bbox.h),
+      1.4
+    );
+    state.mindmap.viewport.scale = clamp(scale, 0.35, 1.4);
+    state.mindmap.viewport.offsetX = padding - bbox.x * state.mindmap.viewport.scale;
+    state.mindmap.viewport.offsetY = padding - bbox.y * state.mindmap.viewport.scale;
+    renderMindmap();
+    scheduleAutosave();
+  }
+
+  function clientToWorld(clientX, clientY) {
+    const rect = els.mindmapSvg.getBoundingClientRect();
+    const viewport = state.mindmap.viewport;
+    return {
+      x: (clientX - rect.left - viewport.offsetX) / viewport.scale,
+      y: (clientY - rect.top - viewport.offsetY) / viewport.scale
+    };
+  }
+
+  function viewportCenterWorld() {
+    const rect = els.mindmapSvg.getBoundingClientRect();
+    const viewport = state.mindmap.viewport;
+    return {
+      x: (rect.width / 2 - viewport.offsetX) / viewport.scale,
+      y: (rect.height / 2 - viewport.offsetY) / viewport.scale
+    };
+  }
+
+  function updatePlacementHint() {
+    if (!pendingActivityId) {
+      els.placementHint.hidden = true;
+      return;
+    }
+    const activity = getActivity(pendingActivityId);
+    els.placementHint.textContent = activity ? "캔버스의 빈 곳을 누르면 활동 노드가 배치된다." : "";
+    els.placementHint.hidden = !activity;
+  }
+
+  function connectedComponent(startId) {
+    const seen = new Set([startId]);
+    const queue = [startId];
+    while (queue.length) {
+      const id = queue.shift();
+      state.mindmap.edges.forEach((edge) => {
+        const next = edge.from === id ? edge.to : edge.to === id ? edge.from : null;
+        if (next && !seen.has(next)) {
+          seen.add(next);
+          queue.push(next);
+        }
+      });
+    }
+    return Array.from(seen);
+  }
+
+  function edgeExists(a, b) {
+    return state.mindmap.edges.some((edge) => {
+      return (edge.from === a && edge.to === b) || (edge.from === b && edge.to === a);
+    });
+  }
+
+  function removeEdgesForNode(nodeId) {
+    state.mindmap.edges = state.mindmap.edges.filter((edge) => edge.from !== nodeId && edge.to !== nodeId);
+  }
+
+  function getActivity(id) {
+    return state.activities.find((activity) => activity.id === id);
+  }
+
+  function getActivityNode(activityId) {
+    return state.mindmap.nodes.find((node) => node.type === "activity" && node.activityId === activityId);
+  }
+
+  function getNode(id) {
+    return state.mindmap.nodes.find((node) => node.id === id);
+  }
+
+  function getEdge(id) {
+    return state.mindmap.edges.find((edge) => edge.id === id);
+  }
+
+  function nodeCenter(node) {
+    const dim = nodeDimensions(node);
+    return { x: node.x + dim.w / 2, y: node.y + dim.h / 2 };
+  }
+
+  function nodeLabel(node) {
+    if (!node) return "";
+    if (node.type === "core") return node.label;
+    if (node.type === "keyword") return node.title;
+    const activity = getActivity(node.activityId);
+    return activity ? activity.topic : "";
+  }
+
+  function nodesBoundingBox(nodes) {
+    if (!nodes.length) return { x: 0, y: 0, w: 1000, h: 600 };
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    nodes.forEach((node) => {
+      const dim = nodeDimensions(node);
+      minX = Math.min(minX, node.x);
+      minY = Math.min(minY, node.y);
+      maxX = Math.max(maxX, node.x + dim.w);
+      maxY = Math.max(maxY, node.y + dim.h);
+    });
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  }
+
+  function saveProject() {
+    state.student.number = els.studentNumber.value.trim();
+    state.student.name = els.studentName.value.trim();
+    if (!state.student.number || !state.student.name) {
+      showToast("프로젝트 저장에는 학번과 이름이 필요하다.");
+      return;
+    }
+    const content = JSON.stringify(state, null, 2);
+    const filename = `생기부마인드맵_${safeFilename(state.student.number)}_${safeFilename(state.student.name)}.json`;
+    downloadText(filename, content, "application/json;charset=utf-8");
+    setSaveStatus("프로젝트를 저장했다.");
+    scheduleAutosave();
+  }
+
+  function requestProjectLoad() {
+    if (hasAnyWork()) {
+      const proceed = confirm("현재 작업이 바뀐다. 저장하지 않았다면 먼저 프로젝트 저장을 누르자. 계속 불러올까?");
+      if (!proceed) return;
+    }
+    els.projectFileInput.value = "";
+    els.projectFileInput.click();
+  }
+
+  function loadProjectFile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const next = normalizeLoadedState(JSON.parse(reader.result));
+        state = next;
+        undoStack = [];
+        selected = { type: null, id: null };
+        pendingActivityId = null;
+        connectStartId = null;
+        clearActivityForm();
+        renderAll();
+        scheduleAutosave();
+        setSaveStatus("프로젝트를 불러왔다.");
+      } catch (error) {
+        console.error(error);
+        showToast("프로젝트 파일을 불러오지 못했다.");
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function resetProject() {
+    if (!confirm("현재 작업과 자동저장을 모두 지울까?")) return;
+    state = createDefaultState();
+    undoStack = [];
+    selected = { type: null, id: null };
+    pendingActivityId = null;
+    connectStartId = null;
+    editingActivityId = null;
+    localStorage.removeItem(AUTOSAVE_KEY);
+    clearActivityForm();
+    renderAll();
+    setSaveStatus("초기화했다.");
+  }
+
+  function normalizeLoadedState(raw) {
+    const base = createDefaultState();
+    const next = { ...base, ...raw };
+    next.version = PROJECT_VERSION;
+    next.student = { ...base.student, ...(raw.student || {}) };
+    next.counters = { ...base.counters, ...(raw.counters || {}) };
+    next.activities = Array.isArray(raw.activities) ? raw.activities.map(normalizeActivity) : [];
+    next.mindmap = { ...base.mindmap, ...(raw.mindmap || {}) };
+    next.mindmap.nodes = Array.isArray(next.mindmap.nodes) ? next.mindmap.nodes : base.mindmap.nodes;
+    CORE_NODES.forEach((core) => {
+      if (!next.mindmap.nodes.some((node) => node.id === core.id)) {
+        next.mindmap.nodes.push({ ...core });
+      }
+    });
+    next.mindmap.edges = Array.isArray(next.mindmap.edges) ? next.mindmap.edges : [];
+    next.mindmap.starLabels = { ...base.mindmap.starLabels, ...(next.mindmap.starLabels || {}) };
+    next.mindmap.viewport = { ...base.mindmap.viewport, ...(next.mindmap.viewport || {}) };
+    return next;
+  }
+
+  function normalizeActivity(activity) {
+    const next = { subjectDetail: "", ...activity };
+    if (next.category === "교과") {
+      next.category = "교과세특";
+      if (!COURSE_SUBCATEGORIES.includes(next.subcategory || "")) {
+        next.subjectDetail = next.subjectDetail || next.subcategory || "";
+        next.subcategory = "";
+      }
+    }
+    if ((next.category === "출결" || next.category === "행발") && !next.subcategory) {
+      next.subcategory = "없음";
+    }
+    if (!isCourseCategory(next.category)) {
+      next.subjectDetail = "";
+    }
+    return next;
+  }
+
+  function scheduleAutosave() {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+      setSaveStatus("자동저장됨");
+    }, 250);
+  }
+
+  function showAutosavePromptIfNeeded() {
+    const saved = localStorage.getItem(AUTOSAVE_KEY);
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && hasAnyWork(parsed)) {
+        els.autosaveBanner.hidden = false;
+      }
+    } catch {
+      localStorage.removeItem(AUTOSAVE_KEY);
+    }
+  }
+
+  function restoreAutosave() {
+    const saved = localStorage.getItem(AUTOSAVE_KEY);
+    if (!saved) return;
+    try {
+      state = normalizeLoadedState(JSON.parse(saved));
+      undoStack = [];
+      selected = { type: null, id: null };
+      clearActivityForm();
+      renderAll();
+      els.autosaveBanner.hidden = true;
+      setSaveStatus("자동저장을 복구했다.");
+    } catch {
+      showToast("자동저장을 복구하지 못했다.");
+    }
+  }
+
+  function hasAnyWork(target = state) {
+    return Boolean(
+      target.student?.number ||
+      target.student?.name ||
+      target.activities?.length ||
+      target.mindmap?.nodes?.some((node) => node.type !== "core") ||
+      target.mindmap?.edges?.length
+    );
+  }
+
+  function copyActivityTable() {
+    const tsv = buildActivityTsv();
+    copyText(tsv).then(() => showToast("표를 복사했다."));
+  }
+
+  function saveActivityTsv() {
+    state.student.number = els.studentNumber.value.trim();
+    state.student.name = els.studentName.value.trim();
+    const number = state.student.number || "학번";
+    const name = state.student.name || "이름";
+    downloadText(`활동표_${safeFilename(number)}_${safeFilename(name)}.tsv`, "\ufeff" + buildActivityTsv(), "text/tab-separated-values;charset=utf-8");
+  }
+
+  function buildActivityTsv() {
+    const headers = ["학년", "항목", "세부항목", "추가 과목명", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
+    const rows = state.activities.map((activity) => [
+      `${activity.grade}학년`,
+      activity.category,
+      activity.subcategory || "",
+      activity.subjectDetail || "",
+      activity.topic,
+      activity.format,
+      activity.primaryArea,
+      activity.secondaryArea || "",
+      activity.memo || ""
+    ]);
+    return [headers, ...rows].map((row) => row.map(tsvCell).join("\t")).join("\n");
+  }
+
+  function printActivityTable() {
+    const rows = state.activities.map((activity) => `
+      <tr>
+        <td>${escapeHtml(activity.grade)}학년</td>
+        <td>${escapeHtml(activity.category)}</td>
+        <td>${escapeHtml(activity.subcategory || "")}</td>
+        <td>${escapeHtml(activity.subjectDetail || "")}</td>
+        <td>${escapeHtml(activity.topic)}</td>
+        <td>${escapeHtml(activity.format)}</td>
+        <td>${escapeHtml(activity.primaryArea)}</td>
+        <td>${escapeHtml(activity.secondaryArea || "")}</td>
+        <td>${escapeHtml(activity.memo || "")}</td>
+      </tr>
+    `).join("");
+    const html = printShell(`
+      ${printHeader("활동 입력표")}
+      <table class="print-table">
+        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>추가 과목명</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="9">입력한 활동이 없다.</td></tr>'}</tbody>
+      </table>
+    `, "portrait");
+    openPrintWindow(html);
+  }
+
+  function printMindmap(mode, areaId) {
+    const selection = getPrintSelection(mode, areaId);
+    if (selection.nodes.length === 0) {
+      showToast("출력할 노드가 없다.");
+      return;
+    }
+    const svg = buildPrintSvg(selection.nodes, selection.edges, selection.viewBox);
+    const title = mode === "area" ? `${nodeLabel(getNode(areaId))} 마인드맵` : "생기부 활동 마인드맵";
+    const html = printShell(`
+      ${printHeader(title)}
+      <div class="map-print-wrap">${svg}</div>
+    `, "landscape");
+    openPrintWindow(html);
+  }
+
+  function getPrintSelection(mode, areaId) {
+    if (mode === "current") {
+      const rect = els.mindmapSvg.getBoundingClientRect();
+      const viewport = state.mindmap.viewport;
+      const viewBox = {
+        x: -viewport.offsetX / viewport.scale,
+        y: -viewport.offsetY / viewport.scale,
+        w: rect.width / viewport.scale,
+        h: rect.height / viewport.scale
+      };
+      return { nodes: state.mindmap.nodes, edges: state.mindmap.edges, viewBox };
+    }
+    if (mode === "area") {
+      const ids = new Set([areaId]);
+      state.mindmap.edges.forEach((edge) => {
+        if (edge.from === areaId) ids.add(edge.to);
+        if (edge.to === areaId) ids.add(edge.from);
+      });
+      const nodes = state.mindmap.nodes.filter((node) => ids.has(node.id));
+      const edges = state.mindmap.edges.filter((edge) => ids.has(edge.from) && ids.has(edge.to));
+      return { nodes, edges, viewBox: paddedViewBox(nodes) };
+    }
+    return { nodes: state.mindmap.nodes, edges: state.mindmap.edges, viewBox: paddedViewBox(state.mindmap.nodes) };
+  }
+
+  function paddedViewBox(nodes) {
+    const bbox = nodesBoundingBox(nodes);
+    const pad = 90;
+    return { x: bbox.x - pad, y: bbox.y - pad, w: bbox.w + pad * 2, h: bbox.h + pad * 2 };
+  }
+
+  function buildPrintSvg(nodes, edges, viewBox) {
+    const nodeIds = new Set(nodes.map((node) => node.id));
+    const edgeMarkup = edges
+      .filter((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to))
+      .map((edge) => printEdgeMarkup(edge))
+      .join("");
+    const labelMarkup = edges
+      .filter((edge) => edge.label && nodeIds.has(edge.from) && nodeIds.has(edge.to))
+      .map((edge) => printEdgeLabelMarkup(edge))
+      .join("");
+    const nodeMarkup = nodes.map((node) => printNodeMarkup(node)).join("");
+    return `
+      <svg class="print-map" viewBox="${viewBox.x} ${viewBox.y} ${Math.max(1, viewBox.w)} ${Math.max(1, viewBox.h)}" xmlns="${SVG_NS}">
+        <rect x="${viewBox.x}" y="${viewBox.y}" width="${viewBox.w}" height="${viewBox.h}" fill="#fbfcfa"/>
+        ${edgeMarkup}
+        ${labelMarkup}
+        ${nodeMarkup}
+      </svg>
+    `;
+  }
+
+  function printEdgeMarkup(edge) {
+    const from = getNode(edge.from);
+    const to = getNode(edge.to);
+    if (!from || !to) return "";
+    const p1 = nodeCenter(from);
+    const p2 = nodeCenter(to);
+    const dx = Math.abs(p2.x - p1.x);
+    const curve = Math.max(60, dx * 0.35);
+    const c1x = p1.x + (p2.x >= p1.x ? curve : -curve);
+    const c2x = p2.x - (p2.x >= p1.x ? curve : -curve);
+    return `<path d="M ${p1.x} ${p1.y} C ${c1x} ${p1.y}, ${c2x} ${p2.y}, ${p2.x} ${p2.y}" fill="none" stroke="#8e9789" stroke-width="2.2" stroke-linecap="round"/>`;
+  }
+
+  function printEdgeLabelMarkup(edge) {
+    const from = getNode(edge.from);
+    const to = getNode(edge.to);
+    if (!from || !to) return "";
+    const p1 = nodeCenter(from);
+    const p2 = nodeCenter(to);
+    const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+    return `<text x="${mid.x}" y="${mid.y - 8}" text-anchor="middle" font-size="13" fill="#444b41">${escapeHtml(edge.label)}</text>`;
+  }
+
+  function printNodeMarkup(node) {
+    const dim = nodeDimensions(node);
+    if (node.type === "core") {
+      const meta = AREA_META[node.area];
+      return `
+        <circle cx="${node.x + dim.w / 2}" cy="${node.y + dim.h / 2}" r="${dim.w / 2}" fill="${meta.bg}" stroke="${meta.color}" stroke-width="3"/>
+        <text x="${node.x + dim.w / 2}" y="${node.y + dim.h / 2 + 8}" text-anchor="middle" font-size="24" font-weight="700" fill="#242623">${escapeHtml(node.label)}</text>
+      `;
+    }
+    const activity = node.type === "activity" ? getActivity(node.activityId) : null;
+    const fill = node.type === "keyword" ? "#eeeeea" : AREA_META[activity.primaryArea].bg;
+    const stroke = node.type === "keyword" ? "#9da39a" : AREA_META[activity.primaryArea].color;
+    const title = node.type === "keyword" ? node.title : activity.topic;
+    const top = node.type === "activity" ? `${activity.grade}학년` : "키워드";
+    const dot = node.type === "activity" && activity.secondaryArea ? `<circle cx="${node.x + 58}" cy="${node.y + 19}" r="6" fill="${AREA_META[activity.secondaryArea].color}" stroke="#666" stroke-width="1"/>` : "";
+    const stars = `${node.starSolid ? "★" : ""}${node.starOutline ? "☆" : ""}`;
+    const lines = wrapText(title, node.type === "activity" ? 15 : 13, 6);
+    const textLines = lines.map((line, index) => `<text x="${node.x + 12}" y="${node.y + 50 + index * 20}" font-size="15" font-weight="700" fill="#242623">${escapeHtml(line)}</text>`).join("");
+    return `
+      <rect x="${node.x}" y="${node.y}" width="${dim.w}" height="${dim.h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+      <rect x="${node.x + 10}" y="${node.y + 9}" width="${node.type === "activity" ? 42 : 54}" height="22" rx="11" fill="rgba(255,255,255,0.78)" stroke="#b8bfb5"/>
+      <text x="${node.x + 31}" y="${node.y + 25}" text-anchor="middle" font-size="12" font-weight="700" fill="#242623">${escapeHtml(top)}</text>
+      ${dot}
+      <text x="${node.x + dim.w - 14}" y="${node.y + 27}" text-anchor="end" font-size="18" fill="#242623">${escapeHtml(stars)}</text>
+      ${textLines}
+    `;
+  }
+
+  function printHeader(title) {
+    const date = new Date();
+    const dateText = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+    return `
+      <header class="print-header">
+        <div>
+          <h1>${escapeHtml(title)}</h1>
+          <p>${escapeHtml(state.student.number || "")} ${escapeHtml(state.student.name || "")}</p>
+        </div>
+        <div class="print-meta">
+          <p>★ ${escapeHtml(state.mindmap.starLabels.solid || "")}</p>
+          <p>☆ ${escapeHtml(state.mindmap.starLabels.outline || "")}</p>
+          <p>출력일: ${dateText}</p>
+        </div>
+      </header>
+    `;
+  }
+
+  function printShell(content, orientation) {
+    return `<!doctype html>
+      <html lang="ko">
+      <head>
+        <meta charset="utf-8">
+        <title>출력</title>
+        <style>
+          @page { size: A4 ${orientation}; margin: 12mm; }
+          body { margin: 0; font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #242623; }
+          .print-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 10px; border-bottom: 1px solid #d9ded6; padding-bottom: 8px; }
+          .print-header h1 { margin: 0 0 4px; font-size: 20px; }
+          .print-header p { margin: 0; font-size: 12px; }
+          .print-meta { text-align: right; display: grid; gap: 3px; }
+          .map-print-wrap { width: 100%; height: 170mm; border: 1px solid #d9ded6; overflow: hidden; }
+          .print-map { width: 100%; height: 100%; display: block; }
+          .print-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          .print-table th, .print-table td { border: 1px solid #cfd5cb; padding: 5px; vertical-align: top; text-align: left; word-break: break-word; }
+          .print-table th { background: #f0f2ee; }
+        </style>
+      </head>
+      <body>${content}</body>
+      </html>`;
+  }
+
+  function openPrintWindow(html) {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      showToast("팝업이 차단되어 출력 창을 열지 못했다.");
+      return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 250);
+  }
+
+  function downloadText(filename, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+      return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    }
+    return fallbackCopy(text);
+  }
+
+  function fallbackCopy(text) {
+    return new Promise((resolve) => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+      resolve();
+    });
+  }
+
+  function normalize(value) {
+    return String(value || "").trim().toLocaleLowerCase("ko-KR");
+  }
+
+  function byValue(a, b) {
+    return String(a || "").localeCompare(String(b || ""), "ko-KR");
+  }
+
+  function isCourseCategory(category) {
+    return category === "교과성적" || category === "교과세특";
+  }
+
+  function categoryRank(category) {
+    const index = CATEGORY_ORDER.indexOf(category);
+    return index === -1 ? CATEGORY_ORDER.length : index;
+  }
+
+  function activityPath(activity) {
+    if (!activity?.subcategory) return "";
+    if (activity.subjectDetail) return `${activity.subcategory} / ${activity.subjectDetail}`;
+    return activity.subcategory;
+  }
+
+  function tsvCell(value) {
+    return String(value || "").replace(/\t/g, " ").replace(/\r?\n/g, " ");
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function escapeAttribute(value) {
+    return escapeHtml(value).replace(/`/g, "&#096;");
+  }
+
+  function safeFilename(value) {
+    return String(value || "").trim().replace(/[\\/:*?"<>|]/g, "_").replace(/\s+/g, "_") || "untitled";
+  }
+
+  function createId(prefix) {
+    return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function cubicPoint(p0, p1, p2, p3, t) {
+    const mt = 1 - t;
+    return {
+      x: mt ** 3 * p0.x + 3 * mt ** 2 * t * p1.x + 3 * mt * t ** 2 * p2.x + t ** 3 * p3.x,
+      y: mt ** 3 * p0.y + 3 * mt ** 2 * t * p1.y + 3 * mt * t ** 2 * p2.y + t ** 3 * p3.y
+    };
+  }
+
+  function wrapText(text, maxChars, maxLines) {
+    const clean = String(text || "").trim();
+    if (!clean) return [""];
+    const chunks = [];
+    let line = "";
+    clean.split(/\s+/).forEach((word) => {
+      if ((line + " " + word).trim().length <= maxChars) {
+        line = (line + " " + word).trim();
+      } else {
+        if (line) chunks.push(line);
+        if (word.length > maxChars) {
+          for (let i = 0; i < word.length; i += maxChars) chunks.push(word.slice(i, i + maxChars));
+          line = "";
+        } else {
+          line = word;
+        }
+      }
+    });
+    if (line) chunks.push(line);
+    return chunks.slice(0, maxLines);
+  }
+
+  function setSaveStatus(text) {
+    els.saveStatus.textContent = text;
+  }
+
+  function showToast(message) {
+    clearTimeout(toastTimer);
+    els.toast.textContent = message;
+    els.toast.hidden = false;
+    toastTimer = setTimeout(() => {
+      els.toast.hidden = true;
+    }, 2200);
+  }
+})();
+
+</script>
+</body>
+</html>
+
