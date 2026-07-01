@@ -140,6 +140,18 @@ label {
   color: #fff;
 }
 
+.autosave-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.autosave-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f7efe1;
+}
+
 .autosave-banner button {
   min-height: 30px;
   padding: 5px 10px;
@@ -194,6 +206,18 @@ label {
 
 .student-bar label:nth-child(2) {
   width: 120px;
+}
+
+.project-save-note {
+  align-self: center;
+  padding: 7px 10px;
+  border: 1px solid #d8ccba;
+  border-radius: 999px;
+  background: #faf5ea;
+  color: var(--seal);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .tabs {
@@ -331,25 +355,6 @@ main {
   padding: 16px;
 }
 
-.card-title-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-.card-title-row h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.form-hint {
-  color: var(--soft);
-  font-size: 13px;
-}
-
 .form-grid {
   display: grid;
   gap: 12px;
@@ -377,6 +382,12 @@ main {
   min-height: 62px;
 }
 
+.char-count {
+  justify-self: end;
+  color: var(--soft);
+  font-size: 12px;
+}
+
 .subject-detail-field input:disabled {
   background: #f1f3ef;
   color: #8c9388;
@@ -401,15 +412,26 @@ main {
   margin-top: 16px;
 }
 
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
 .list-controls {
   display: flex;
   align-items: end;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
 .list-controls label {
   width: min(360px, 100%);
+}
+
+.list-controls .search-field {
+  width: min(420px, 100%);
 }
 
 .list-controls label:last-child {
@@ -426,9 +448,42 @@ main {
 
 .activity-table {
   width: 100%;
-  min-width: 1180px;
+  min-width: 1080px;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 14px;
+}
+
+.activity-table .col-grade {
+  width: 52px;
+}
+
+.activity-table .col-category {
+  width: 88px;
+}
+
+.activity-table .col-subcategory {
+  width: 92px;
+}
+
+.activity-table .col-subject-detail {
+  width: 120px;
+}
+
+.activity-table .col-topic {
+  width: 30%;
+}
+
+.activity-table .col-format {
+  width: 74px;
+}
+
+.activity-table .col-area {
+  width: 108px;
+}
+
+.activity-table .col-memo {
+  width: 28%;
 }
 
 .activity-table th,
@@ -447,6 +502,19 @@ main {
   font-size: 13px;
 }
 
+.activity-table tbody tr {
+  cursor: pointer;
+}
+
+.activity-table tbody tr:hover {
+  background: #f8f4eb;
+}
+
+.activity-table tbody tr.selected-row {
+  background: #f2eadb;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
 .activity-table .clamp {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -455,19 +523,10 @@ main {
   line-height: 1.45;
 }
 
-.row-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.row-actions button {
-  padding: 5px 8px;
-  min-height: 30px;
-}
-
 .empty-row {
   color: var(--muted);
   text-align: center;
+  cursor: default;
 }
 
 .area-pill {
@@ -1073,6 +1132,8 @@ main {
   .app-header,
   .tabs,
   .section-toolbar,
+  .table-toolbar,
+  .list-controls,
   .mindmap-topbar,
   .side-panel,
   .toast {
@@ -1084,7 +1145,10 @@ main {
 </head>
 <body>
   <div id="autosaveBanner" class="autosave-banner" hidden>
-    <span>이전에 작업하던 내용이 있다.</span>
+    <div class="autosave-text">
+      <span>이전에 작업하던 내용이 있다.</span>
+      <strong id="autosaveInfo">학번/이름 없음</strong>
+    </div>
     <button type="button" id="restoreAutosaveBtn">복구</button>
     <button type="button" id="dismissAutosaveBtn" class="ghost">무시</button>
   </div>
@@ -1098,7 +1162,8 @@ main {
       <label>학번 <input id="studentNumber" type="text" inputmode="numeric" autocomplete="off"></label>
       <label>이름 <input id="studentName" type="text" autocomplete="off"></label>
       <button type="button" id="loadProjectBtn" title="저장한 프로젝트 파일을 불러온다.">프로젝트 불러오기</button>
-      <button type="button" id="saveProjectBtn" class="primary" title="활동표와 마인드맵 작업 전체를 저장한다.">프로젝트 저장</button>
+      <span class="project-save-note" title="프로젝트 저장은 활동 입력표와 마인드맵 작업 전체를 .json 파일로 저장한다.">활동표+마인드맵 전체</span>
+      <button type="button" id="saveProjectBtn" class="primary" title="활동표와 마인드맵 작업 전체를 공유/불러오기용 .json 파일로 저장한다.">프로젝트 저장</button>
       <button type="button" id="resetProjectBtn" class="danger ghost" title="현재 작업과 자동저장을 모두 지운다.">초기화</button>
       <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
     </div>
@@ -1111,28 +1176,16 @@ main {
 
   <main>
     <section id="activitiesTab" class="tab-panel active">
-      <div class="section-toolbar">
-        <div class="toolbar-group">
-          <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">표 복사</button>
-          <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 표 저장</button>
-          <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">표 인쇄</button>
-        </div>
-      </div>
-
-      <section class="card activity-editor" aria-labelledby="activityFormTitle">
-        <div class="card-title-row">
-          <h2 id="activityFormTitle">활동 추가</h2>
-          <span class="form-hint">활동주제 하나가 마인드맵 노드 하나가 된다.</span>
-        </div>
+      <section class="card activity-editor">
         <form id="activityForm">
           <div class="form-grid activity-form-grid">
             <div class="form-row classification-row">
             <label class="grade-field">학년
               <select id="activityGrade" required>
                 <option value="">선택</option>
-                <option value="1">1학년</option>
-                <option value="2">2학년</option>
-                <option value="3">3학년</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
               </select>
             </label>
             <label class="category-field">항목
@@ -1154,12 +1207,13 @@ main {
             </div>
             <div class="form-row content-row">
             <label class="topic-field">활동주제
-              <textarea id="activityTopic" rows="2" required placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
+              <textarea id="activityTopic" rows="2" required maxlength="100" placeholder="예: 가격탄력성으로 본 노인 무임승차 제도 개선"></textarea>
+              <span id="topicCount" class="char-count">0/100</span>
             </label>
             <label class="format-field">형식
               <input id="activityFormat" type="text" required placeholder="토론, 보고서, 발표, 반장 등">
             </label>
-            <label class="area-field">주 평가영역
+            <label class="area-field">평가영역1
               <select id="primaryArea" required>
                 <option value="">선택</option>
                 <option value="학업역량">학업역량</option>
@@ -1167,7 +1221,7 @@ main {
                 <option value="공동체역량">공동체역량</option>
               </select>
             </label>
-            <label class="area-field">보조 평가영역
+            <label class="area-field">평가영역2
               <select id="secondaryArea">
                 <option value="">없음</option>
                 <option value="학업역량">학업역량</option>
@@ -1178,33 +1232,54 @@ main {
             </div>
           </div>
           <label class="wide-label memo-field">메모
-            <textarea id="activityMemo" rows="3" placeholder="필요하면 생각, 연결 아이디어, 보완점 등을 적는다."></textarea>
+            <textarea id="activityMemo" rows="3" maxlength="300" placeholder="필요하면 생각, 연결 아이디어, 보완점 등을 적는다."></textarea>
+            <span id="memoCount" class="char-count">0/300</span>
           </label>
           <div class="form-actions">
             <button type="submit" id="submitActivityBtn" class="primary">활동 추가</button>
-            <button type="button" id="clearActivityBtn" class="ghost">입력 비우기</button>
-            <button type="button" id="cancelEditBtn" class="ghost" hidden>취소</button>
+            <button type="button" id="cancelEditBtn" class="ghost" hidden>수정 취소</button>
+            <button type="button" id="deleteActivityBtn" class="danger ghost" hidden>활동 삭제</button>
           </div>
         </form>
       </section>
 
       <section class="activity-list-section">
+        <div class="table-toolbar">
+          <div class="toolbar-group">
+            <button type="button" id="copyTableBtn" title="스프레드시트에 바로 붙여넣을 수 있다.">표 복사</button>
+            <button type="button" id="saveTsvBtn" title="엑셀에서 파일 열기로 불러올 수 있다.">엑셀용 표 저장</button>
+            <button type="button" id="printTableBtn" title="활동표를 인쇄하거나 PDF로 저장한다.">표 인쇄</button>
+          </div>
+        </div>
         <div class="list-controls">
-          <label>검색
+          <label class="search-field">검색
             <input id="activitySearch" type="search" placeholder="활동주제, 형식, 메모">
           </label>
+          <button type="button" id="activitySearchBtn">검색</button>
+          <button type="button" id="activitySearchResetBtn" class="ghost">초기화</button>
           <label>정렬
             <select id="activitySort">
               <option value="input">입력순</option>
               <option value="grade">학년순</option>
               <option value="category">항목순</option>
               <option value="subcategory">세부항목순</option>
-              <option value="primaryArea">주 평가영역순</option>
+              <option value="primaryArea">평가영역1순</option>
             </select>
           </label>
         </div>
         <div class="table-wrap">
           <table class="activity-table">
+            <colgroup>
+              <col class="col-grade">
+              <col class="col-category">
+              <col class="col-subcategory">
+              <col class="col-subject-detail">
+              <col class="col-topic">
+              <col class="col-format">
+              <col class="col-area">
+              <col class="col-area">
+              <col class="col-memo">
+            </colgroup>
             <thead>
               <tr>
                 <th>학년</th>
@@ -1213,10 +1288,9 @@ main {
                 <th>추가 과목명</th>
                 <th>활동주제</th>
                 <th>형식</th>
-                <th>주 평가</th>
-                <th>보조 평가</th>
+                <th>평가영역1</th>
+                <th>평가영역2</th>
                 <th>메모</th>
-                <th>관리</th>
               </tr>
             </thead>
             <tbody id="activityTableBody"></tbody>
@@ -1253,11 +1327,11 @@ main {
             <span class="cluster-label">출력</span>
             <label class="inline-select print-select">범위
               <select id="printModeSelect">
-                <option value="full">전체 1장 출력</option>
-                <option value="current">현재 화면 출력</option>
-                <option value="area:core-community">공동체역량</option>
+                <option value="full">전체</option>
+                <option value="current">현재 화면</option>
                 <option value="area:core-academic">학업역량</option>
                 <option value="area:core-inquiry">탐구역량</option>
+                <option value="area:core-community">공동체역량</option>
               </select>
             </label>
             <button type="button" id="printSelectedBtn">출력</button>
@@ -1306,10 +1380,10 @@ main {
               <div class="filter-row">
                 <label>학년
                   <select id="sideGradeFilter">
-                    <option value="all">전체 학년</option>
-                    <option value="1">1학년</option>
-                    <option value="2">2학년</option>
-                    <option value="3">3학년</option>
+                    <option value="all">전체</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
                   </select>
                 </label>
                 <label>배치 상태
@@ -1342,7 +1416,7 @@ main {
   const PROJECT_VERSION = 1;
   const AREAS = ["학업역량", "탐구역량", "공동체역량"];
   const CATEGORY_ORDER = ["출결", "창체", "교과성적", "교과세특", "행발"];
-  const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "교양예술"];
+  const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "과학", "교양예술"];
   const AREA_META = {
     "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#d9ebe4" },
     "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#f1dde5" },
@@ -1366,6 +1440,7 @@ main {
   let undoStack = [];
   let autosaveTimer = null;
   let toastTimer = null;
+  let activitySearchQuery = "";
   let dragState = null;
   let panState = null;
 
@@ -1378,19 +1453,21 @@ main {
     bindEvents();
     updateSubcategoryControl();
     updateSecondaryOptions();
+    updateCharacterCounts();
     renderAll();
     showAutosavePromptIfNeeded();
   }
 
   function cacheElements() {
     const ids = [
-      "autosaveBanner", "restoreAutosaveBtn", "dismissAutosaveBtn", "saveStatus",
+      "autosaveBanner", "autosaveInfo", "restoreAutosaveBtn", "dismissAutosaveBtn", "saveStatus",
       "studentNumber", "studentName", "loadProjectBtn", "saveProjectBtn",
-      "resetProjectBtn", "projectFileInput", "activityFormTitle", "activityForm",
+      "resetProjectBtn", "projectFileInput", "activityForm",
       "activityGrade", "activityCategory", "activitySubcategorySelect",
       "activitySubjectDetail", "activityFormat",
       "primaryArea", "secondaryArea", "activityTopic", "activityMemo",
-      "submitActivityBtn", "clearActivityBtn", "cancelEditBtn", "activitySearch",
+      "submitActivityBtn", "cancelEditBtn", "deleteActivityBtn", "activitySearch",
+      "activitySearchBtn", "activitySearchResetBtn", "topicCount", "memoCount",
       "activitySort", "activityTableBody", "copyTableBtn", "saveTsvBtn",
       "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "zoomOutBtn",
       "zoomResetBtn", "zoomInBtn", "fitViewBtn", "printModeSelect", "printSelectedBtn",
@@ -1431,10 +1508,19 @@ main {
 
     els.activityCategory.addEventListener("change", updateSubcategoryControl);
     els.primaryArea.addEventListener("change", updateSecondaryOptions);
+    els.activityTopic.addEventListener("input", updateCharacterCounts);
+    els.activityMemo.addEventListener("input", updateCharacterCounts);
     els.activityForm.addEventListener("submit", submitActivityForm);
-    els.clearActivityBtn.addEventListener("click", clearActivityForm);
     els.cancelEditBtn.addEventListener("click", cancelActivityEdit);
-    els.activitySearch.addEventListener("input", renderActivityTable);
+    els.deleteActivityBtn.addEventListener("click", deleteEditingActivity);
+    els.activitySearchBtn.addEventListener("click", applyActivitySearch);
+    els.activitySearchResetBtn.addEventListener("click", resetActivitySearch);
+    els.activitySearch.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyActivitySearch();
+      }
+    });
     els.activitySort.addEventListener("change", renderActivityTable);
     els.copyTableBtn.addEventListener("click", copyActivityTable);
     els.saveTsvBtn.addEventListener("click", saveActivityTsv);
@@ -1544,7 +1630,7 @@ main {
     if (category === "창체") {
       options = ["", "자율", "동아리", "진로", "봉사"];
     } else if (isCourseCategory(category)) {
-      options = ["", "국어", "수학", "영어", "사회", "교양예술"];
+      options = ["", ...COURSE_SUBCATEGORIES];
     } else if (category === "출결" || category === "행발") {
       options = ["없음"];
       disabled = true;
@@ -1588,7 +1674,6 @@ main {
       const index = state.activities.findIndex((item) => item.id === editingActivityId);
       if (index >= 0) {
         state.activities[index] = { ...state.activities[index], ...activity };
-        showToast("활동을 수정했다.");
       }
     } else {
       const id = createId("act");
@@ -1599,7 +1684,6 @@ main {
         createdAt: Date.now(),
         ...activity
       });
-      showToast("활동을 추가했다.");
     }
     clearActivityForm();
     renderActivityTable();
@@ -1627,17 +1711,35 @@ main {
       return showValidation("세부항목을 입력해야 한다.");
     }
     if (!topic) return showValidation("활동주제를 입력해야 한다.");
+    if (topic.length > 100) return showValidation("활동주제는 100자 이내로 입력해야 한다.");
     if (!format) return showValidation("형식을 입력해야 한다.");
-    if (!primaryArea) return showValidation("주 평가영역을 선택해야 한다.");
+    if (!primaryArea) return showValidation("평가영역1을 선택해야 한다.");
     if (secondaryArea && secondaryArea === primaryArea) {
-      return showValidation("보조 평가영역은 주 평가영역과 다르게 선택해야 한다.");
+      return showValidation("평가영역2는 평가영역1과 다르게 선택해야 한다.");
     }
+    if (memo.length > 300) return showValidation("메모는 300자 이내로 입력해야 한다.");
     return { grade, category, subcategory, subjectDetail, topic, format, primaryArea, secondaryArea, memo };
   }
 
   function showValidation(message) {
     showToast(message);
     return null;
+  }
+
+  function updateCharacterCounts() {
+    els.topicCount.textContent = `${els.activityTopic.value.length}/100`;
+    els.memoCount.textContent = `${els.activityMemo.value.length}/300`;
+  }
+
+  function applyActivitySearch() {
+    activitySearchQuery = normalize(els.activitySearch.value);
+    renderActivityTable();
+  }
+
+  function resetActivitySearch() {
+    activitySearchQuery = "";
+    els.activitySearch.value = "";
+    renderActivityTable();
   }
 
   function nextHiddenSequence(grade) {
@@ -1649,10 +1751,9 @@ main {
     const activity = getActivity(id);
     if (!activity) return;
     editingActivityId = id;
-    els.activityFormTitle.textContent = "활동 수정";
     els.submitActivityBtn.textContent = "수정 저장";
-    els.clearActivityBtn.hidden = true;
     els.cancelEditBtn.hidden = false;
+    els.deleteActivityBtn.hidden = false;
     els.activityGrade.value = activity.grade;
     els.activityCategory.value = activity.category;
     updateSubcategoryControl();
@@ -1664,22 +1765,30 @@ main {
     els.secondaryArea.value = activity.secondaryArea || "";
     els.activityTopic.value = activity.topic;
     els.activityMemo.value = activity.memo || "";
+    updateCharacterCounts();
+    renderActivityTable();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function clearActivityForm() {
     editingActivityId = null;
     els.activityForm.reset();
-    els.activityFormTitle.textContent = "활동 추가";
     els.submitActivityBtn.textContent = "활동 추가";
-    els.clearActivityBtn.hidden = false;
     els.cancelEditBtn.hidden = true;
+    els.deleteActivityBtn.hidden = true;
     updateSubcategoryControl();
     updateSecondaryOptions();
+    updateCharacterCounts();
+    renderActivityTable();
   }
 
   function cancelActivityEdit() {
     clearActivityForm();
+  }
+
+  function deleteEditingActivity() {
+    if (!editingActivityId) return;
+    deleteActivity(editingActivityId);
   }
 
   function deleteActivity(id) {
@@ -1705,7 +1814,7 @@ main {
     if (activities.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 10;
+      td.colSpan = 9;
       td.className = "empty-row";
       td.textContent = "입력한 활동이 없다.";
       tr.appendChild(td);
@@ -1714,8 +1823,11 @@ main {
     }
     activities.forEach((activity) => {
       const tr = document.createElement("tr");
+      tr.className = editingActivityId === activity.id ? "selected-row" : "";
+      tr.tabIndex = 0;
+      tr.title = "클릭하면 이 활동을 수정한다.";
       tr.innerHTML = `
-        <td>${escapeHtml(activity.grade)}학년</td>
+        <td>${escapeHtml(activity.grade)}</td>
         <td>${escapeHtml(activity.category)}</td>
         <td>${escapeHtml(activity.subcategory || "")}</td>
         <td>${escapeHtml(activity.subjectDetail || "")}</td>
@@ -1724,19 +1836,20 @@ main {
         <td>${areaPill(activity.primaryArea)}</td>
         <td>${activity.secondaryArea ? areaPill(activity.secondaryArea) : ""}</td>
         <td><div class="clamp">${escapeHtml(activity.memo || "")}</div></td>
-        <td><div class="row-actions">
-          <button type="button" data-action="edit" data-id="${activity.id}">수정</button>
-          <button type="button" class="danger ghost" data-action="delete" data-id="${activity.id}">삭제</button>
-        </div></td>
       `;
-      tr.querySelector('[data-action="edit"]').addEventListener("click", () => editActivity(activity.id));
-      tr.querySelector('[data-action="delete"]').addEventListener("click", () => deleteActivity(activity.id));
+      tr.addEventListener("click", () => editActivity(activity.id));
+      tr.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          editActivity(activity.id);
+        }
+      });
       els.activityTableBody.appendChild(tr);
     });
   }
 
   function getFilteredSortedActivities() {
-    const query = normalize(els.activitySearch.value);
+    const query = activitySearchQuery;
     let activities = state.activities.filter((activity) => {
       if (!query) return true;
       return [activity.topic, activity.format, activity.memo].some((value) => normalize(value).includes(query));
@@ -1781,7 +1894,7 @@ main {
       card.innerHTML = `
         ${placed ? '<span class="check-mark">✓</span>' : ""}
         <div class="activity-card-title">${escapeHtml(activity.topic)}</div>
-        <div class="activity-card-meta">${activity.grade}학년 · ${escapeHtml(activity.category)}${activityPath(activity) ? ` · ${escapeHtml(activityPath(activity))}` : ""} · ${AREA_META[activity.primaryArea].short}</div>
+        <div class="activity-card-meta">${activity.grade} · ${escapeHtml(activity.category)}${activityPath(activity) ? ` · ${escapeHtml(activityPath(activity))}` : ""} · ${AREA_META[activity.primaryArea].short}</div>
       `;
       card.addEventListener("click", () => {
         if (placed) {
@@ -1942,7 +2055,7 @@ main {
     const dot = activity.secondaryArea ? `<span class="area-dot ${AREA_META[activity.secondaryArea].cls}" title="${escapeHtml(activity.secondaryArea)}"></span>` : "";
     return `
       <div class="node-topline">
-        <span class="grade-badge">${activity.grade}학년</span>
+        <span class="grade-badge">${activity.grade}</span>
         ${dot}
         <span class="star-marks">${stars}</span>
         <span class="star-controls">${controls}</span>
@@ -2219,13 +2332,13 @@ main {
     els.detailContent.innerHTML = `
       <h3 class="detail-title">${escapeHtml(activity.topic)}</h3>
       <dl class="detail-list">
-        ${detailRow("학년", `${activity.grade}학년`)}
+        ${detailRow("학년", activity.grade)}
         ${detailRow("항목", activity.category)}
         ${detailRow("세부항목", activity.subcategory || "")}
         ${detailRow("추가 과목명", activity.subjectDetail || "")}
         ${detailRow("형식", activity.format)}
-        ${detailRow("주 평가", activity.primaryArea)}
-        ${detailRow("보조 평가", activity.secondaryArea || "")}
+        ${detailRow("평가영역1", activity.primaryArea)}
+        ${detailRow("평가영역2", activity.secondaryArea || "")}
         ${detailRow("메모", activity.memo || "")}
       </dl>
       <div class="detail-actions">
@@ -2528,7 +2641,7 @@ main {
     const content = JSON.stringify(state, null, 2);
     const filename = `생기부마인드맵_${safeFilename(state.student.number)}_${safeFilename(state.student.name)}.json`;
     downloadText(filename, content, "application/json;charset=utf-8");
-    setSaveStatus("프로젝트를 저장했다.");
+    setSaveStatus("프로젝트 파일 저장: 활동표+마인드맵 전체");
     scheduleAutosave();
   }
 
@@ -2553,6 +2666,7 @@ main {
         selected = { type: null, id: null };
         pendingActivityId = null;
         connectStartId = null;
+        resetActivitySearch();
         clearActivityForm();
         renderAll();
         scheduleAutosave();
@@ -2573,6 +2687,7 @@ main {
     pendingActivityId = null;
     connectStartId = null;
     editingActivityId = null;
+    resetActivitySearch();
     localStorage.removeItem(AUTOSAVE_KEY);
     clearActivityForm();
     renderAll();
@@ -2580,22 +2695,19 @@ main {
   }
 
   function normalizeLoadedState(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
     const base = createDefaultState();
-    const next = { ...base, ...raw };
+    const next = { ...base, ...source };
     next.version = PROJECT_VERSION;
-    next.student = { ...base.student, ...(raw.student || {}) };
-    next.counters = { ...base.counters, ...(raw.counters || {}) };
-    next.activities = Array.isArray(raw.activities) ? raw.activities.map(normalizeActivity) : [];
-    next.mindmap = { ...base.mindmap, ...(raw.mindmap || {}) };
+    next.student = { ...base.student, ...(source.student || {}) };
+    next.counters = { ...base.counters, ...(source.counters || {}) };
+    next.activities = Array.isArray(source.activities) ? source.activities.map(normalizeActivity) : [];
+    next.mindmap = { ...base.mindmap, ...(source.mindmap || {}) };
     next.mindmap.nodes = Array.isArray(next.mindmap.nodes) ? next.mindmap.nodes : base.mindmap.nodes;
-    CORE_NODES.forEach((core) => {
-      if (!next.mindmap.nodes.some((node) => node.id === core.id)) {
-        next.mindmap.nodes.push({ ...core });
-      }
-    });
     next.mindmap.edges = Array.isArray(next.mindmap.edges) ? next.mindmap.edges : [];
     next.mindmap.starLabels = { ...base.mindmap.starLabels, ...(next.mindmap.starLabels || {}) };
     next.mindmap.viewport = { ...base.mindmap.viewport, ...(next.mindmap.viewport || {}) };
+    sanitizeLoadedMindmap(next);
     return next;
   }
 
@@ -2614,37 +2726,113 @@ main {
     if (!isCourseCategory(next.category)) {
       next.subjectDetail = "";
     }
+    if (!AREAS.includes(next.primaryArea)) {
+      next.primaryArea = AREAS[0];
+    }
+    if (next.secondaryArea && (!AREAS.includes(next.secondaryArea) || next.secondaryArea === next.primaryArea)) {
+      next.secondaryArea = "";
+    }
     return next;
+  }
+
+  function sanitizeLoadedMindmap(target) {
+    const activityIds = new Set(target.activities.map((activity) => activity.id).filter(Boolean));
+    const sourceNodes = Array.isArray(target.mindmap.nodes) ? target.mindmap.nodes : [];
+    const sourceById = new Map(sourceNodes.filter((node) => node?.id).map((node) => [node.id, node]));
+    const nodes = CORE_NODES.map((core) => {
+      const saved = sourceById.get(core.id);
+      return {
+        ...core,
+        x: finiteNumber(saved?.x, core.x),
+        y: finiteNumber(saved?.y, core.y)
+      };
+    });
+    const nodeIds = new Set(nodes.map((node) => node.id));
+    const placedActivityIds = new Set();
+
+    sourceNodes.forEach((node) => {
+      if (!node || typeof node !== "object" || node.type === "core") return;
+      const id = String(node.id || "").trim();
+      if (!id || nodeIds.has(id)) return;
+      if (node.type === "activity") {
+        const activityId = String(node.activityId || "").trim();
+        if (!activityIds.has(activityId) || placedActivityIds.has(activityId)) return;
+        nodes.push({
+          id,
+          type: "activity",
+          activityId,
+          x: finiteNumber(node.x, 260),
+          y: finiteNumber(node.y, 260),
+          starSolid: Boolean(node.starSolid),
+          starOutline: Boolean(node.starOutline)
+        });
+        nodeIds.add(id);
+        placedActivityIds.add(activityId);
+        return;
+      }
+      if (node.type === "keyword") {
+        nodes.push({
+          id,
+          type: "keyword",
+          title: String(node.title || "").trim() || "키워드",
+          memo: String(node.memo || ""),
+          x: finiteNumber(node.x, 360),
+          y: finiteNumber(node.y, 260),
+          starSolid: Boolean(node.starSolid),
+          starOutline: Boolean(node.starOutline)
+        });
+        nodeIds.add(id);
+      }
+    });
+
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    const edgeIds = new Set();
+    const edgePairs = new Set();
+    target.mindmap.nodes = nodes;
+    target.mindmap.edges = target.mindmap.edges.flatMap((edge) => {
+      if (!edge || typeof edge !== "object") return [];
+      const from = String(edge.from || "").trim();
+      const to = String(edge.to || "").trim();
+      if (!from || !to || from === to || !nodesById.has(from) || !nodesById.has(to)) return [];
+      const fromNode = nodesById.get(from);
+      const toNode = nodesById.get(to);
+      if (fromNode.type === "core" && toNode.type === "core") return [];
+      const pairKey = [from, to].sort().join("::");
+      if (edgePairs.has(pairKey)) return [];
+      edgePairs.add(pairKey);
+      let id = String(edge.id || "").trim();
+      if (!id || edgeIds.has(id)) id = createId("edge");
+      edgeIds.add(id);
+      return [{ id, from, to, label: String(edge.label || "").trim() }];
+    });
   }
 
   function scheduleAutosave() {
     clearTimeout(autosaveTimer);
     autosaveTimer = setTimeout(() => {
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
-      setSaveStatus("자동저장됨");
+      const savedAt = new Date().toISOString();
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ savedAt, state }));
+      setSaveStatus(`브라우저에 임시저장됨 ${formatClock(savedAt)}`);
     }, 250);
   }
 
   function showAutosavePromptIfNeeded() {
-    const saved = localStorage.getItem(AUTOSAVE_KEY);
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed && hasAnyWork(parsed)) {
-        els.autosaveBanner.hidden = false;
-      }
-    } catch {
-      localStorage.removeItem(AUTOSAVE_KEY);
+    const autosave = readAutosave();
+    if (!autosave) return;
+    if (hasAnyWork(autosave.state)) {
+      els.autosaveInfo.textContent = autosaveSummary(autosave);
+      els.autosaveBanner.hidden = false;
     }
   }
 
   function restoreAutosave() {
-    const saved = localStorage.getItem(AUTOSAVE_KEY);
-    if (!saved) return;
+    const autosave = readAutosave();
+    if (!autosave) return;
     try {
-      state = normalizeLoadedState(JSON.parse(saved));
+      state = normalizeLoadedState(autosave.state);
       undoStack = [];
       selected = { type: null, id: null };
+      resetActivitySearch();
       clearActivityForm();
       renderAll();
       els.autosaveBanner.hidden = true;
@@ -2652,6 +2840,28 @@ main {
     } catch {
       showToast("자동저장을 복구하지 못했다.");
     }
+  }
+
+  function readAutosave() {
+    const saved = localStorage.getItem(AUTOSAVE_KEY);
+    if (!saved) return null;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed?.state) {
+        return { savedAt: parsed.savedAt || "", state: parsed.state };
+      }
+      return { savedAt: parsed?.savedAt || "", state: parsed };
+    } catch {
+      localStorage.removeItem(AUTOSAVE_KEY);
+      return null;
+    }
+  }
+
+  function autosaveSummary(autosave) {
+    const student = autosave.state?.student || {};
+    const who = [student.number, student.name].map((value) => String(value || "").trim()).filter(Boolean).join(" ");
+    const when = autosave.savedAt ? `브라우저에 임시저장됨 ${formatSavedAt(autosave.savedAt)}` : "브라우저 임시저장";
+    return [who || "학번/이름 없음", when].filter(Boolean).join(" · ");
   }
 
   function hasAnyWork(target = state) {
@@ -2680,7 +2890,7 @@ main {
   function buildActivityTsv() {
     const headers = ["학년", "항목", "세부항목", "추가 과목명", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
     const rows = state.activities.map((activity) => [
-      `${activity.grade}학년`,
+      activity.grade,
       activity.category,
       activity.subcategory || "",
       activity.subjectDetail || "",
@@ -2696,7 +2906,7 @@ main {
   function printActivityTable() {
     const rows = state.activities.map((activity) => `
       <tr>
-        <td>${escapeHtml(activity.grade)}학년</td>
+        <td>${escapeHtml(activity.grade)}</td>
         <td>${escapeHtml(activity.category)}</td>
         <td>${escapeHtml(activity.subcategory || "")}</td>
         <td>${escapeHtml(activity.subjectDetail || "")}</td>
@@ -2831,7 +3041,7 @@ main {
     const fill = node.type === "keyword" ? "#eeeeea" : AREA_META[activity.primaryArea].bg;
     const stroke = node.type === "keyword" ? "#9da39a" : AREA_META[activity.primaryArea].color;
     const title = node.type === "keyword" ? node.title : activity.topic;
-    const top = node.type === "activity" ? `${activity.grade}학년` : "키워드";
+    const top = node.type === "activity" ? activity.grade : "키워드";
     const dot = node.type === "activity" && activity.secondaryArea ? `<circle cx="${node.x + 58}" cy="${node.y + 19}" r="6" fill="${AREA_META[activity.secondaryArea].color}" stroke="#666" stroke-width="1"/>` : "";
     const stars = `${node.starSolid ? "★" : ""}${node.starOutline ? "☆" : ""}`;
     const lines = wrapText(title, node.type === "activity" ? 15 : 13, 6);
@@ -2934,6 +3144,22 @@ main {
     });
   }
 
+  function formatClock(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+
+  function formatSavedAt(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${pad2(date.getMonth() + 1)}.${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
   function normalize(value) {
     return String(value || "").trim().toLocaleLowerCase("ko-KR");
   }
@@ -2986,6 +3212,11 @@ main {
     return Math.max(min, Math.min(max, value));
   }
 
+  function finiteNumber(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
   function cubicPoint(p0, p1, p2, p3, t) {
     const mt = 1 - t;
     return {
@@ -3020,13 +3251,13 @@ main {
     els.saveStatus.textContent = text;
   }
 
-  function showToast(message) {
+  function showToast(message, duration = 2200) {
     clearTimeout(toastTimer);
     els.toast.textContent = message;
     els.toast.hidden = false;
     toastTimer = setTimeout(() => {
       els.toast.hidden = true;
-    }, 2200);
+    }, duration);
   }
 })();
 

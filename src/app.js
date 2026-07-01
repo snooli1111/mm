@@ -5,7 +5,7 @@
   const PROJECT_VERSION = 1;
   const AREAS = ["학업역량", "탐구역량", "공동체역량"];
   const CATEGORY_ORDER = ["출결", "창체", "교과성적", "교과세특", "행발"];
-  const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "교양예술"];
+  const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "과학", "교양예술"];
   const AREA_META = {
     "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#d9ebe4" },
     "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#f1dde5" },
@@ -29,6 +29,7 @@
   let undoStack = [];
   let autosaveTimer = null;
   let toastTimer = null;
+  let activitySearchQuery = "";
   let dragState = null;
   let panState = null;
 
@@ -41,19 +42,21 @@
     bindEvents();
     updateSubcategoryControl();
     updateSecondaryOptions();
+    updateCharacterCounts();
     renderAll();
     showAutosavePromptIfNeeded();
   }
 
   function cacheElements() {
     const ids = [
-      "autosaveBanner", "restoreAutosaveBtn", "dismissAutosaveBtn", "saveStatus",
+      "autosaveBanner", "autosaveInfo", "restoreAutosaveBtn", "dismissAutosaveBtn", "saveStatus",
       "studentNumber", "studentName", "loadProjectBtn", "saveProjectBtn",
-      "resetProjectBtn", "projectFileInput", "activityFormTitle", "activityForm",
+      "resetProjectBtn", "projectFileInput", "activityForm",
       "activityGrade", "activityCategory", "activitySubcategorySelect",
       "activitySubjectDetail", "activityFormat",
       "primaryArea", "secondaryArea", "activityTopic", "activityMemo",
-      "submitActivityBtn", "clearActivityBtn", "cancelEditBtn", "activitySearch",
+      "submitActivityBtn", "cancelEditBtn", "deleteActivityBtn", "activitySearch",
+      "activitySearchBtn", "activitySearchResetBtn", "topicCount", "memoCount",
       "activitySort", "activityTableBody", "copyTableBtn", "saveTsvBtn",
       "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "zoomOutBtn",
       "zoomResetBtn", "zoomInBtn", "fitViewBtn", "printModeSelect", "printSelectedBtn",
@@ -94,10 +97,19 @@
 
     els.activityCategory.addEventListener("change", updateSubcategoryControl);
     els.primaryArea.addEventListener("change", updateSecondaryOptions);
+    els.activityTopic.addEventListener("input", updateCharacterCounts);
+    els.activityMemo.addEventListener("input", updateCharacterCounts);
     els.activityForm.addEventListener("submit", submitActivityForm);
-    els.clearActivityBtn.addEventListener("click", clearActivityForm);
     els.cancelEditBtn.addEventListener("click", cancelActivityEdit);
-    els.activitySearch.addEventListener("input", renderActivityTable);
+    els.deleteActivityBtn.addEventListener("click", deleteEditingActivity);
+    els.activitySearchBtn.addEventListener("click", applyActivitySearch);
+    els.activitySearchResetBtn.addEventListener("click", resetActivitySearch);
+    els.activitySearch.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyActivitySearch();
+      }
+    });
     els.activitySort.addEventListener("change", renderActivityTable);
     els.copyTableBtn.addEventListener("click", copyActivityTable);
     els.saveTsvBtn.addEventListener("click", saveActivityTsv);
@@ -207,7 +219,7 @@
     if (category === "창체") {
       options = ["", "자율", "동아리", "진로", "봉사"];
     } else if (isCourseCategory(category)) {
-      options = ["", "국어", "수학", "영어", "사회", "교양예술"];
+      options = ["", ...COURSE_SUBCATEGORIES];
     } else if (category === "출결" || category === "행발") {
       options = ["없음"];
       disabled = true;
@@ -251,7 +263,6 @@
       const index = state.activities.findIndex((item) => item.id === editingActivityId);
       if (index >= 0) {
         state.activities[index] = { ...state.activities[index], ...activity };
-        showToast("활동을 수정했다.");
       }
     } else {
       const id = createId("act");
@@ -262,7 +273,6 @@
         createdAt: Date.now(),
         ...activity
       });
-      showToast("활동을 추가했다.");
     }
     clearActivityForm();
     renderActivityTable();
@@ -290,17 +300,35 @@
       return showValidation("세부항목을 입력해야 한다.");
     }
     if (!topic) return showValidation("활동주제를 입력해야 한다.");
+    if (topic.length > 100) return showValidation("활동주제는 100자 이내로 입력해야 한다.");
     if (!format) return showValidation("형식을 입력해야 한다.");
-    if (!primaryArea) return showValidation("주 평가영역을 선택해야 한다.");
+    if (!primaryArea) return showValidation("평가영역1을 선택해야 한다.");
     if (secondaryArea && secondaryArea === primaryArea) {
-      return showValidation("보조 평가영역은 주 평가영역과 다르게 선택해야 한다.");
+      return showValidation("평가영역2는 평가영역1과 다르게 선택해야 한다.");
     }
+    if (memo.length > 300) return showValidation("메모는 300자 이내로 입력해야 한다.");
     return { grade, category, subcategory, subjectDetail, topic, format, primaryArea, secondaryArea, memo };
   }
 
   function showValidation(message) {
     showToast(message);
     return null;
+  }
+
+  function updateCharacterCounts() {
+    els.topicCount.textContent = `${els.activityTopic.value.length}/100`;
+    els.memoCount.textContent = `${els.activityMemo.value.length}/300`;
+  }
+
+  function applyActivitySearch() {
+    activitySearchQuery = normalize(els.activitySearch.value);
+    renderActivityTable();
+  }
+
+  function resetActivitySearch() {
+    activitySearchQuery = "";
+    els.activitySearch.value = "";
+    renderActivityTable();
   }
 
   function nextHiddenSequence(grade) {
@@ -312,10 +340,9 @@
     const activity = getActivity(id);
     if (!activity) return;
     editingActivityId = id;
-    els.activityFormTitle.textContent = "활동 수정";
     els.submitActivityBtn.textContent = "수정 저장";
-    els.clearActivityBtn.hidden = true;
     els.cancelEditBtn.hidden = false;
+    els.deleteActivityBtn.hidden = false;
     els.activityGrade.value = activity.grade;
     els.activityCategory.value = activity.category;
     updateSubcategoryControl();
@@ -327,22 +354,30 @@
     els.secondaryArea.value = activity.secondaryArea || "";
     els.activityTopic.value = activity.topic;
     els.activityMemo.value = activity.memo || "";
+    updateCharacterCounts();
+    renderActivityTable();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function clearActivityForm() {
     editingActivityId = null;
     els.activityForm.reset();
-    els.activityFormTitle.textContent = "활동 추가";
     els.submitActivityBtn.textContent = "활동 추가";
-    els.clearActivityBtn.hidden = false;
     els.cancelEditBtn.hidden = true;
+    els.deleteActivityBtn.hidden = true;
     updateSubcategoryControl();
     updateSecondaryOptions();
+    updateCharacterCounts();
+    renderActivityTable();
   }
 
   function cancelActivityEdit() {
     clearActivityForm();
+  }
+
+  function deleteEditingActivity() {
+    if (!editingActivityId) return;
+    deleteActivity(editingActivityId);
   }
 
   function deleteActivity(id) {
@@ -368,7 +403,7 @@
     if (activities.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 10;
+      td.colSpan = 9;
       td.className = "empty-row";
       td.textContent = "입력한 활동이 없다.";
       tr.appendChild(td);
@@ -377,8 +412,11 @@
     }
     activities.forEach((activity) => {
       const tr = document.createElement("tr");
+      tr.className = editingActivityId === activity.id ? "selected-row" : "";
+      tr.tabIndex = 0;
+      tr.title = "클릭하면 이 활동을 수정한다.";
       tr.innerHTML = `
-        <td>${escapeHtml(activity.grade)}학년</td>
+        <td>${escapeHtml(activity.grade)}</td>
         <td>${escapeHtml(activity.category)}</td>
         <td>${escapeHtml(activity.subcategory || "")}</td>
         <td>${escapeHtml(activity.subjectDetail || "")}</td>
@@ -387,19 +425,20 @@
         <td>${areaPill(activity.primaryArea)}</td>
         <td>${activity.secondaryArea ? areaPill(activity.secondaryArea) : ""}</td>
         <td><div class="clamp">${escapeHtml(activity.memo || "")}</div></td>
-        <td><div class="row-actions">
-          <button type="button" data-action="edit" data-id="${activity.id}">수정</button>
-          <button type="button" class="danger ghost" data-action="delete" data-id="${activity.id}">삭제</button>
-        </div></td>
       `;
-      tr.querySelector('[data-action="edit"]').addEventListener("click", () => editActivity(activity.id));
-      tr.querySelector('[data-action="delete"]').addEventListener("click", () => deleteActivity(activity.id));
+      tr.addEventListener("click", () => editActivity(activity.id));
+      tr.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          editActivity(activity.id);
+        }
+      });
       els.activityTableBody.appendChild(tr);
     });
   }
 
   function getFilteredSortedActivities() {
-    const query = normalize(els.activitySearch.value);
+    const query = activitySearchQuery;
     let activities = state.activities.filter((activity) => {
       if (!query) return true;
       return [activity.topic, activity.format, activity.memo].some((value) => normalize(value).includes(query));
@@ -444,7 +483,7 @@
       card.innerHTML = `
         ${placed ? '<span class="check-mark">✓</span>' : ""}
         <div class="activity-card-title">${escapeHtml(activity.topic)}</div>
-        <div class="activity-card-meta">${activity.grade}학년 · ${escapeHtml(activity.category)}${activityPath(activity) ? ` · ${escapeHtml(activityPath(activity))}` : ""} · ${AREA_META[activity.primaryArea].short}</div>
+        <div class="activity-card-meta">${activity.grade} · ${escapeHtml(activity.category)}${activityPath(activity) ? ` · ${escapeHtml(activityPath(activity))}` : ""} · ${AREA_META[activity.primaryArea].short}</div>
       `;
       card.addEventListener("click", () => {
         if (placed) {
@@ -605,7 +644,7 @@
     const dot = activity.secondaryArea ? `<span class="area-dot ${AREA_META[activity.secondaryArea].cls}" title="${escapeHtml(activity.secondaryArea)}"></span>` : "";
     return `
       <div class="node-topline">
-        <span class="grade-badge">${activity.grade}학년</span>
+        <span class="grade-badge">${activity.grade}</span>
         ${dot}
         <span class="star-marks">${stars}</span>
         <span class="star-controls">${controls}</span>
@@ -882,13 +921,13 @@
     els.detailContent.innerHTML = `
       <h3 class="detail-title">${escapeHtml(activity.topic)}</h3>
       <dl class="detail-list">
-        ${detailRow("학년", `${activity.grade}학년`)}
+        ${detailRow("학년", activity.grade)}
         ${detailRow("항목", activity.category)}
         ${detailRow("세부항목", activity.subcategory || "")}
         ${detailRow("추가 과목명", activity.subjectDetail || "")}
         ${detailRow("형식", activity.format)}
-        ${detailRow("주 평가", activity.primaryArea)}
-        ${detailRow("보조 평가", activity.secondaryArea || "")}
+        ${detailRow("평가영역1", activity.primaryArea)}
+        ${detailRow("평가영역2", activity.secondaryArea || "")}
         ${detailRow("메모", activity.memo || "")}
       </dl>
       <div class="detail-actions">
@@ -1191,7 +1230,7 @@
     const content = JSON.stringify(state, null, 2);
     const filename = `생기부마인드맵_${safeFilename(state.student.number)}_${safeFilename(state.student.name)}.json`;
     downloadText(filename, content, "application/json;charset=utf-8");
-    setSaveStatus("프로젝트를 저장했다.");
+    setSaveStatus("프로젝트 파일 저장: 활동표+마인드맵 전체");
     scheduleAutosave();
   }
 
@@ -1216,6 +1255,7 @@
         selected = { type: null, id: null };
         pendingActivityId = null;
         connectStartId = null;
+        resetActivitySearch();
         clearActivityForm();
         renderAll();
         scheduleAutosave();
@@ -1236,6 +1276,7 @@
     pendingActivityId = null;
     connectStartId = null;
     editingActivityId = null;
+    resetActivitySearch();
     localStorage.removeItem(AUTOSAVE_KEY);
     clearActivityForm();
     renderAll();
@@ -1243,22 +1284,19 @@
   }
 
   function normalizeLoadedState(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
     const base = createDefaultState();
-    const next = { ...base, ...raw };
+    const next = { ...base, ...source };
     next.version = PROJECT_VERSION;
-    next.student = { ...base.student, ...(raw.student || {}) };
-    next.counters = { ...base.counters, ...(raw.counters || {}) };
-    next.activities = Array.isArray(raw.activities) ? raw.activities.map(normalizeActivity) : [];
-    next.mindmap = { ...base.mindmap, ...(raw.mindmap || {}) };
+    next.student = { ...base.student, ...(source.student || {}) };
+    next.counters = { ...base.counters, ...(source.counters || {}) };
+    next.activities = Array.isArray(source.activities) ? source.activities.map(normalizeActivity) : [];
+    next.mindmap = { ...base.mindmap, ...(source.mindmap || {}) };
     next.mindmap.nodes = Array.isArray(next.mindmap.nodes) ? next.mindmap.nodes : base.mindmap.nodes;
-    CORE_NODES.forEach((core) => {
-      if (!next.mindmap.nodes.some((node) => node.id === core.id)) {
-        next.mindmap.nodes.push({ ...core });
-      }
-    });
     next.mindmap.edges = Array.isArray(next.mindmap.edges) ? next.mindmap.edges : [];
     next.mindmap.starLabels = { ...base.mindmap.starLabels, ...(next.mindmap.starLabels || {}) };
     next.mindmap.viewport = { ...base.mindmap.viewport, ...(next.mindmap.viewport || {}) };
+    sanitizeLoadedMindmap(next);
     return next;
   }
 
@@ -1277,37 +1315,113 @@
     if (!isCourseCategory(next.category)) {
       next.subjectDetail = "";
     }
+    if (!AREAS.includes(next.primaryArea)) {
+      next.primaryArea = AREAS[0];
+    }
+    if (next.secondaryArea && (!AREAS.includes(next.secondaryArea) || next.secondaryArea === next.primaryArea)) {
+      next.secondaryArea = "";
+    }
     return next;
+  }
+
+  function sanitizeLoadedMindmap(target) {
+    const activityIds = new Set(target.activities.map((activity) => activity.id).filter(Boolean));
+    const sourceNodes = Array.isArray(target.mindmap.nodes) ? target.mindmap.nodes : [];
+    const sourceById = new Map(sourceNodes.filter((node) => node?.id).map((node) => [node.id, node]));
+    const nodes = CORE_NODES.map((core) => {
+      const saved = sourceById.get(core.id);
+      return {
+        ...core,
+        x: finiteNumber(saved?.x, core.x),
+        y: finiteNumber(saved?.y, core.y)
+      };
+    });
+    const nodeIds = new Set(nodes.map((node) => node.id));
+    const placedActivityIds = new Set();
+
+    sourceNodes.forEach((node) => {
+      if (!node || typeof node !== "object" || node.type === "core") return;
+      const id = String(node.id || "").trim();
+      if (!id || nodeIds.has(id)) return;
+      if (node.type === "activity") {
+        const activityId = String(node.activityId || "").trim();
+        if (!activityIds.has(activityId) || placedActivityIds.has(activityId)) return;
+        nodes.push({
+          id,
+          type: "activity",
+          activityId,
+          x: finiteNumber(node.x, 260),
+          y: finiteNumber(node.y, 260),
+          starSolid: Boolean(node.starSolid),
+          starOutline: Boolean(node.starOutline)
+        });
+        nodeIds.add(id);
+        placedActivityIds.add(activityId);
+        return;
+      }
+      if (node.type === "keyword") {
+        nodes.push({
+          id,
+          type: "keyword",
+          title: String(node.title || "").trim() || "키워드",
+          memo: String(node.memo || ""),
+          x: finiteNumber(node.x, 360),
+          y: finiteNumber(node.y, 260),
+          starSolid: Boolean(node.starSolid),
+          starOutline: Boolean(node.starOutline)
+        });
+        nodeIds.add(id);
+      }
+    });
+
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    const edgeIds = new Set();
+    const edgePairs = new Set();
+    target.mindmap.nodes = nodes;
+    target.mindmap.edges = target.mindmap.edges.flatMap((edge) => {
+      if (!edge || typeof edge !== "object") return [];
+      const from = String(edge.from || "").trim();
+      const to = String(edge.to || "").trim();
+      if (!from || !to || from === to || !nodesById.has(from) || !nodesById.has(to)) return [];
+      const fromNode = nodesById.get(from);
+      const toNode = nodesById.get(to);
+      if (fromNode.type === "core" && toNode.type === "core") return [];
+      const pairKey = [from, to].sort().join("::");
+      if (edgePairs.has(pairKey)) return [];
+      edgePairs.add(pairKey);
+      let id = String(edge.id || "").trim();
+      if (!id || edgeIds.has(id)) id = createId("edge");
+      edgeIds.add(id);
+      return [{ id, from, to, label: String(edge.label || "").trim() }];
+    });
   }
 
   function scheduleAutosave() {
     clearTimeout(autosaveTimer);
     autosaveTimer = setTimeout(() => {
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
-      setSaveStatus("자동저장됨");
+      const savedAt = new Date().toISOString();
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ savedAt, state }));
+      setSaveStatus(`브라우저에 임시저장됨 ${formatClock(savedAt)}`);
     }, 250);
   }
 
   function showAutosavePromptIfNeeded() {
-    const saved = localStorage.getItem(AUTOSAVE_KEY);
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed && hasAnyWork(parsed)) {
-        els.autosaveBanner.hidden = false;
-      }
-    } catch {
-      localStorage.removeItem(AUTOSAVE_KEY);
+    const autosave = readAutosave();
+    if (!autosave) return;
+    if (hasAnyWork(autosave.state)) {
+      els.autosaveInfo.textContent = autosaveSummary(autosave);
+      els.autosaveBanner.hidden = false;
     }
   }
 
   function restoreAutosave() {
-    const saved = localStorage.getItem(AUTOSAVE_KEY);
-    if (!saved) return;
+    const autosave = readAutosave();
+    if (!autosave) return;
     try {
-      state = normalizeLoadedState(JSON.parse(saved));
+      state = normalizeLoadedState(autosave.state);
       undoStack = [];
       selected = { type: null, id: null };
+      resetActivitySearch();
       clearActivityForm();
       renderAll();
       els.autosaveBanner.hidden = true;
@@ -1315,6 +1429,28 @@
     } catch {
       showToast("자동저장을 복구하지 못했다.");
     }
+  }
+
+  function readAutosave() {
+    const saved = localStorage.getItem(AUTOSAVE_KEY);
+    if (!saved) return null;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed?.state) {
+        return { savedAt: parsed.savedAt || "", state: parsed.state };
+      }
+      return { savedAt: parsed?.savedAt || "", state: parsed };
+    } catch {
+      localStorage.removeItem(AUTOSAVE_KEY);
+      return null;
+    }
+  }
+
+  function autosaveSummary(autosave) {
+    const student = autosave.state?.student || {};
+    const who = [student.number, student.name].map((value) => String(value || "").trim()).filter(Boolean).join(" ");
+    const when = autosave.savedAt ? `브라우저에 임시저장됨 ${formatSavedAt(autosave.savedAt)}` : "브라우저 임시저장";
+    return [who || "학번/이름 없음", when].filter(Boolean).join(" · ");
   }
 
   function hasAnyWork(target = state) {
@@ -1343,7 +1479,7 @@
   function buildActivityTsv() {
     const headers = ["학년", "항목", "세부항목", "추가 과목명", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
     const rows = state.activities.map((activity) => [
-      `${activity.grade}학년`,
+      activity.grade,
       activity.category,
       activity.subcategory || "",
       activity.subjectDetail || "",
@@ -1359,7 +1495,7 @@
   function printActivityTable() {
     const rows = state.activities.map((activity) => `
       <tr>
-        <td>${escapeHtml(activity.grade)}학년</td>
+        <td>${escapeHtml(activity.grade)}</td>
         <td>${escapeHtml(activity.category)}</td>
         <td>${escapeHtml(activity.subcategory || "")}</td>
         <td>${escapeHtml(activity.subjectDetail || "")}</td>
@@ -1494,7 +1630,7 @@
     const fill = node.type === "keyword" ? "#eeeeea" : AREA_META[activity.primaryArea].bg;
     const stroke = node.type === "keyword" ? "#9da39a" : AREA_META[activity.primaryArea].color;
     const title = node.type === "keyword" ? node.title : activity.topic;
-    const top = node.type === "activity" ? `${activity.grade}학년` : "키워드";
+    const top = node.type === "activity" ? activity.grade : "키워드";
     const dot = node.type === "activity" && activity.secondaryArea ? `<circle cx="${node.x + 58}" cy="${node.y + 19}" r="6" fill="${AREA_META[activity.secondaryArea].color}" stroke="#666" stroke-width="1"/>` : "";
     const stars = `${node.starSolid ? "★" : ""}${node.starOutline ? "☆" : ""}`;
     const lines = wrapText(title, node.type === "activity" ? 15 : 13, 6);
@@ -1597,6 +1733,22 @@
     });
   }
 
+  function formatClock(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+
+  function formatSavedAt(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${pad2(date.getMonth() + 1)}.${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
   function normalize(value) {
     return String(value || "").trim().toLocaleLowerCase("ko-KR");
   }
@@ -1649,6 +1801,11 @@
     return Math.max(min, Math.min(max, value));
   }
 
+  function finiteNumber(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
   function cubicPoint(p0, p1, p2, p3, t) {
     const mt = 1 - t;
     return {
@@ -1683,12 +1840,12 @@
     els.saveStatus.textContent = text;
   }
 
-  function showToast(message) {
+  function showToast(message, duration = 2200) {
     clearTimeout(toastTimer);
     els.toast.textContent = message;
     els.toast.hidden = false;
     toastTimer = setTimeout(() => {
       els.toast.hidden = true;
-    }, 2200);
+    }, duration);
   }
 })();
