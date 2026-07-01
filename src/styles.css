@@ -599,26 +599,6 @@ main {
   padding-block: 7px;
 }
 
-.mode-buttons {
-  display: flex;
-  gap: 4px;
-  padding: 2px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--panel-sunk);
-}
-
-.mode-buttons .mode {
-  border-color: transparent;
-  background: transparent;
-  padding-inline: 11px;
-}
-
-.mode-buttons .mode.active {
-  background: var(--accent);
-  color: #fff;
-}
-
 .inline-select {
   display: flex;
   align-items: center;
@@ -657,6 +637,11 @@ main {
   display: block;
   touch-action: none;
   user-select: none;
+  cursor: grab;
+}
+
+.mindmap-svg:active {
+  cursor: grabbing;
 }
 
 .canvas-bg {
@@ -950,6 +935,7 @@ main {
 }
 
 .node-card {
+  position: relative;
   width: 100%;
   height: 100%;
   border: 2px solid var(--line-dark);
@@ -972,17 +958,21 @@ main {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
+}
+
+.core-label {
+  pointer-events: none;
 }
 
 .node-card.activity,
 .node-card.keyword {
   border-radius: 8px;
-  padding: 10px;
+  padding: 8px;
   display: grid;
   align-content: start;
-  gap: 7px;
+  gap: 5px;
 }
 
 .node-card.keyword {
@@ -1008,26 +998,26 @@ main {
 .node-topline {
   display: flex;
   align-items: center;
-  gap: 6px;
-  min-height: 22px;
+  gap: 5px;
+  min-height: 20px;
 }
 
 .grade-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 22px;
-  padding: 0 8px;
+  height: 20px;
+  padding: 0 7px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.76);
   border: 1px solid rgba(80, 89, 77, 0.28);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .area-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.25);
   flex: 0 0 auto;
@@ -1049,46 +1039,78 @@ main {
   margin-left: auto;
   display: flex;
   gap: 3px;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
 }
 
-.star-controls {
+.node-actions {
   margin-left: auto;
   display: none;
   gap: 3px;
+  align-items: center;
 }
 
 .node-card.selected .star-marks {
   display: none;
 }
 
-.node-card.selected .star-controls {
+.node-card.selected .node-actions {
   display: flex;
 }
 
-.star-controls button {
-  min-height: 24px;
-  width: 28px;
+.node-actions button {
+  min-height: 26px;
+  min-width: 26px;
   padding: 0;
   border-radius: 6px;
   line-height: 1;
   background: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 800;
 }
 
-.star-controls button.active {
+.node-actions button[data-node-action] {
+  min-width: 38px;
+  padding-inline: 4px;
+}
+
+.node-card.core .node-actions {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  margin-left: 0;
+  transform: translateX(-50%);
+}
+
+.node-card.core .node-actions button {
+  min-width: 36px;
+}
+
+.node-actions button.active {
   background: var(--accent);
   color: #fff;
 }
 
 .node-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-weight: 800;
-  line-height: 1.32;
+  line-height: 1.28;
+  max-height: 2.56em;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+}
+
+.node-card.activity .node-title {
+  -webkit-line-clamp: 3;
+  max-height: 3.84em;
+  font-size: 14px;
 }
 
 .node-card.keyword .node-title {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .connect-start .node-card {
