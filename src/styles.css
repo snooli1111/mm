@@ -168,9 +168,22 @@ label {
 
 .brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   white-space: nowrap;
+}
+
+.brand-title {
+  display: grid;
+  gap: 2px;
+}
+
+.brand-kicker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .brand h1 {
@@ -233,8 +246,108 @@ label {
 }
 
 main {
-  height: calc(100vh - 118px);
+  height: calc(100vh - 152px);
   overflow: hidden;
+}
+
+.app-footer {
+  padding: 7px 18px 9px;
+  color: rgba(70, 74, 67, 0.3);
+  font-size: 11px;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(36, 34, 31, 0.36);
+}
+
+.help-dialog {
+  width: min(920px, calc(100vw - 36px));
+  max-height: calc(100vh - 36px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 24px 72px -30px rgba(30, 22, 14, 0.55);
+  overflow: hidden;
+}
+
+.help-header,
+.help-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--panel-sunk);
+}
+
+.help-header {
+  border-bottom: 1px solid var(--line);
+}
+
+.help-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+}
+
+.help-kicker {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.help-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.help-body {
+  overflow: auto;
+  padding: 20px 24px 24px;
+}
+
+.help-body section + section {
+  margin-top: 22px;
+}
+
+.help-body h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.help-body h4 {
+  margin: 16px 0 6px;
+  font-size: 15px;
+}
+
+.help-body p,
+.help-body li {
+  color: #3f423d;
+  font-size: 14px;
+}
+
+.help-body p {
+  margin: 0 0 8px;
+}
+
+.help-body ul,
+.help-body ol {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+
+.help-body li + li {
+  margin-top: 5px;
 }
 
 .tab-panel {
@@ -431,7 +544,7 @@ main {
 }
 
 .activity-table-tools .search-field {
-  width: clamp(220px, 24vw, 310px);
+  width: clamp(170px, 18vw, 240px);
 }
 
 .activity-table-tools .sort-select {
@@ -1212,6 +1325,8 @@ main {
 
   .autosave-banner,
   .app-header,
+  .app-footer,
+  .modal-backdrop,
   .tabs,
   .section-toolbar,
   .activity-table-tools,

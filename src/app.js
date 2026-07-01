@@ -33,6 +33,8 @@
   let sideSearchQuery = "";
   let dragState = null;
   let panState = null;
+  let pinchState = null;
+  const activePointers = new Map();
   let suppressNodeClickUntil = 0;
 
   const els = {};
@@ -52,7 +54,7 @@
   function cacheElements() {
     const ids = [
       "autosaveBanner", "autosaveInfo", "restoreAutosaveBtn", "dismissAutosaveBtn", "saveStatus",
-      "studentNumber", "studentName", "loadProjectBtn", "saveProjectBtn",
+      "studentNumber", "studentName", "helpBtn", "helpModal", "loadProjectBtn", "saveProjectBtn",
       "resetProjectBtn", "projectFileInput", "activityForm",
       "activityGrade", "activityCategory", "activitySubcategorySelect",
       "activitySubjectDetail", "activityFormat",
@@ -91,6 +93,15 @@
     els.projectFileInput.addEventListener("change", loadProjectFile);
     els.saveProjectBtn.addEventListener("click", saveProject);
     els.resetProjectBtn.addEventListener("click", resetProject);
+    els.helpBtn.addEventListener("click", openHelpModal);
+    els.helpModal.addEventListener("click", (event) => {
+      if (event.target === els.helpModal || event.target.closest("[data-close-help]")) {
+        closeHelpModal();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !els.helpModal.hidden) closeHelpModal();
+    });
 
     els.restoreAutosaveBtn.addEventListener("click", restoreAutosave);
     els.dismissAutosaveBtn.addEventListener("click", () => {
@@ -142,6 +153,8 @@
     els.mindmapSvg.addEventListener("drop", onActivityDrop);
     window.addEventListener("pointermove", onWindowPointerMove);
     window.addEventListener("pointerup", onWindowPointerUp);
+    window.addEventListener("pointercancel", onWindowPointerUp);
+    window.addEventListener("blur", clearActivePointers);
 
     els.showKeywordFormBtn.addEventListener("click", () => {
       els.keywordForm.hidden = !els.keywordForm.hidden;
@@ -214,6 +227,16 @@
     });
     els.activityPanel.classList.toggle("active", panel === "activity");
     els.detailPanel.classList.toggle("active", panel === "detail");
+  }
+
+  function openHelpModal() {
+    els.helpModal.hidden = false;
+    els.helpModal.querySelector("[data-close-help]")?.focus();
+  }
+
+  function closeHelpModal() {
+    els.helpModal.hidden = true;
+    els.helpBtn.focus();
   }
 
   function updateSubcategoryControl() {
@@ -753,6 +776,12 @@
   function onNodePointerDown(event, nodeId) {
     if (event.button !== 0 || event.target.closest("button")) return;
     event.stopPropagation();
+    capturePointer(event.currentTarget, event);
+    rememberPointer(event);
+    if (startPinchIfPossible()) {
+      event.preventDefault();
+      return;
+    }
     const node = getNode(nodeId);
     if (!node) return;
     if (connectStartId) return;
@@ -773,7 +802,6 @@
         return { id, x: item.x, y: item.y };
       })
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
   }
 
   function onNodeClick(event, nodeId) {
@@ -832,6 +860,12 @@
   function onSvgPointerDown(event) {
     const isBlank = event.target === els.mindmapSvg || event.target.classList.contains("canvas-bg");
     if (!isBlank) return;
+    capturePointer(event.currentTarget, event);
+    rememberPointer(event);
+    if (startPinchIfPossible()) {
+      event.preventDefault();
+      return;
+    }
     if (connectStartId) {
       clearMindmapSelection();
       return;
@@ -851,6 +885,13 @@
   }
 
   function onWindowPointerMove(event) {
+    if (activePointers.has(event.pointerId)) {
+      rememberPointer(event);
+    }
+    if (pinchState) {
+      updatePinchZoom();
+      return;
+    }
     if (dragState) {
       const world = clientToWorld(event.clientX, event.clientY);
       const dx = world.x - dragState.start.x;
@@ -878,7 +919,17 @@
     }
   }
 
-  function onWindowPointerUp() {
+  function onWindowPointerUp(event) {
+    if (pinchState) {
+      const isPinchPointer = pinchState.pointerIds.includes(event.pointerId);
+      forgetPointer(event);
+      if (isPinchPointer || activePointers.size < 2) finishPinchZoom();
+      return;
+    }
+    if (dragState && event.pointerId !== dragState.pointerId) {
+      forgetPointer(event);
+      return;
+    }
     if (dragState) {
       if (dragState.moved) {
         commitUndo(dragState.before);
@@ -896,6 +947,101 @@
       }
       panState = null;
     }
+    forgetPointer(event);
+  }
+
+  function capturePointer(target, event) {
+    try {
+      target.setPointerCapture?.(event.pointerId);
+    } catch {
+      // Some synthetic or cancelled pointer events cannot be captured.
+    }
+  }
+
+  function rememberPointer(event) {
+    activePointers.set(event.pointerId, {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+
+  function forgetPointer(event) {
+    activePointers.delete(event.pointerId);
+  }
+
+  function clearActivePointers() {
+    activePointers.clear();
+    pinchState = null;
+    dragState = null;
+    panState = null;
+  }
+
+  function startPinchIfPossible() {
+    if (pinchState) return true;
+    if (activePointers.size < 2) return false;
+    const pointers = Array.from(activePointers.values()).slice(0, 2);
+    const center = pointerCenter(pointers[0], pointers[1]);
+    const distance = Math.max(1, pointerDistance(pointers[0], pointers[1]));
+    cancelSinglePointerGestureForPinch();
+    pinchState = {
+      pointerIds: [pointers[0].id, pointers[1].id],
+      startDistance: distance,
+      startScale: state.mindmap.viewport.scale,
+      centerWorld: clientToWorld(center.x, center.y),
+      moved: false
+    };
+    return true;
+  }
+
+  function cancelSinglePointerGestureForPinch() {
+    let shouldRender = false;
+    if (dragState?.moved) {
+      state.mindmap = dragState.before;
+      shouldRender = true;
+    }
+    if (panState?.moved) {
+      state.mindmap.viewport.offsetX = panState.offsetX;
+      state.mindmap.viewport.offsetY = panState.offsetY;
+      shouldRender = true;
+    }
+    dragState = null;
+    panState = null;
+    if (shouldRender) renderMindmap();
+  }
+
+  function updatePinchZoom() {
+    const pointers = pinchState.pointerIds.map((id) => activePointers.get(id));
+    if (pointers.some((pointer) => !pointer)) return;
+    const [first, second] = pointers;
+    const distance = Math.max(1, pointerDistance(first, second));
+    const center = pointerCenter(first, second);
+    const rect = els.mindmapSvg.getBoundingClientRect();
+    const scale = clamp(pinchState.startScale * (distance / pinchState.startDistance), 0.35, 2.2);
+    state.mindmap.viewport.scale = Number(scale.toFixed(3));
+    state.mindmap.viewport.offsetX = center.x - rect.left - pinchState.centerWorld.x * state.mindmap.viewport.scale;
+    state.mindmap.viewport.offsetY = center.y - rect.top - pinchState.centerWorld.y * state.mindmap.viewport.scale;
+    pinchState.moved = true;
+    renderMindmap();
+  }
+
+  function finishPinchZoom() {
+    if (pinchState?.moved) {
+      suppressNodeClickUntil = Date.now() + 250;
+      scheduleAutosave();
+    }
+    pinchState = null;
+  }
+
+  function pointerDistance(first, second) {
+    return Math.hypot(second.x - first.x, second.y - first.y);
+  }
+
+  function pointerCenter(first, second) {
+    return {
+      x: (first.x + second.x) / 2,
+      y: (first.y + second.y) / 2
+    };
   }
 
   function onActivityDrop(event) {
@@ -1643,7 +1789,7 @@
       return;
     }
     const svg = buildPrintSvg(selection.nodes, selection.edges, selection.viewBox);
-    const title = mode === "area" ? `${nodeLabel(getNode(areaId))} 마인드맵` : "생기부 활동 마인드맵";
+    const title = mode === "area" ? `${nodeLabel(getNode(areaId))} 마인드맵` : "생기부 마인드맵";
     const html = printShell(`
       <main class="print-page map-page">
         ${printHeader(title)}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>생기부 활동 마인드맵</title>
+  <title>생기부 마인드맵</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,12 +18,16 @@
 
   <header class="app-header">
     <div class="brand">
-      <h1>생기부 활동 마인드맵</h1>
+      <div class="brand-title">
+        <p class="brand-kicker">2026년 소하고 3학년</p>
+        <h1>생기부 마인드맵</h1>
+      </div>
       <span class="status" id="saveStatus">준비됨</span>
     </div>
     <div class="student-bar">
       <label>학번 <input id="studentNumber" type="text" inputmode="numeric" autocomplete="off"></label>
       <label>이름 <input id="studentName" type="text" autocomplete="off"></label>
+      <button type="button" id="helpBtn" class="ghost" title="앱 사용법을 확인한다.">사용법</button>
       <button type="button" id="loadProjectBtn" title="저장한 프로젝트 파일을 불러온다.">프로젝트 불러오기</button>
       <button type="button" id="saveProjectBtn" class="primary" title="활동표와 마인드맵 작업 전체를 공유/불러오기용 .json 파일로 저장한다.">프로젝트 저장</button>
       <button type="button" id="resetProjectBtn" class="danger ghost" title="현재 작업과 자동저장을 모두 지운다.">초기화</button>
@@ -266,6 +270,54 @@
       </div>
     </section>
   </main>
+
+  <footer class="app-footer">Copyright © 2026 HWANG INSOOL All Rights Reserved.</footer>
+
+  <div id="helpModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+    <section class="help-dialog">
+      <div class="help-header">
+        <div>
+          <p class="help-kicker">2026년 소하고 3학년</p>
+          <h2 id="helpTitle">생기부 마인드맵 사용법</h2>
+        </div>
+        <button type="button" class="ghost help-close" data-close-help aria-label="사용법 닫기">닫기</button>
+      </div>
+      <div class="help-body">
+        <section>
+          <h3>왜 써야 하나</h3>
+          <p>생기부를 표로만 보면 활동이 나열되어 있을 뿐 흐름이 잘 보이지 않는다. 마인드맵으로 직접 배치해보면서 아래 두 가지를 스스로 확인한다.</p>
+          <h4>1. 진로·전공 고민할 때</h4>
+          <p>그 활동을 왜 했는지, 그때는 나조차 몰랐을 수 있다. 생기부를 자세히 분석하면서 나도 의식하지 못했던 관심 분야를 찾아볼 수 있다.</p>
+          <h4>2. 면접 준비할 때</h4>
+          <p>관심 분야는 시간이 지나며 심화되고 확장된다. 그 흐름을 봐야 지원동기와 활동의 의미를 설명할 수 있다. 마인드맵이 그 흐름을 보여준다.</p>
+        </section>
+
+        <section>
+          <h3>어떻게 쓰나</h3>
+          <h4>1. 두 탭이 하는 일</h4>
+          <ul>
+            <li><strong>활동입력탭</strong>: 생기부 항목별로 드러나는 활동을 모두 입력한다.</li>
+            <li><strong>마인드맵탭</strong>: 입력한 활동을 학업·탐구·공동체 중심으로, 관심 주제가 심화·확장되는 순서로 배치한다.</li>
+            <li>필요하면 키워드 노드를 추가해 활동을 정리하거나 연결한다.</li>
+            <li>관련 있는 활동끼리 선으로 연결하고, 왜 연결되는지 짧게 적는다.</li>
+          </ul>
+          <h4>2. 순서</h4>
+          <ol>
+            <li>학번과 이름을 입력한다.</li>
+            <li>활동입력탭에서 생기부 활동을 입력한다. 학년별로 끊어서 진행하는 것을 추천한다.</li>
+            <li>1학년 활동을 모두 입력한 후, 마인드맵탭 캔버스에 배치한다.</li>
+            <li>2학년도 같은 방식으로 반복한다.</li>
+            <li>3학년은 아직 생기부가 나오지 않았으니 떠오르는 대로 입력한다. 예를 들면 참여한 활동의 주제, 수행평가 주제, 독서, 앞으로 남은 활동 등이다.</li>
+            <li>마인드맵탭에서 배치하며, 유독 눈에 띄거나 중요하다고 생각되는 활동에 ★ 또는 ☆로 표시한다.</li>
+            <li>활동입력탭 또는 마인드맵탭에서 인쇄 버튼으로 뽑아 교사와 함께 점검한다.</li>
+          </ol>
+        </section>
+      </div>
+      <div class="help-footer">
+        <button type="button" class="primary" data-close-help>확인</button>
+      </div>
+    </section>
+  </div>
 
   <div id="toast" class="toast" hidden></div>
 
