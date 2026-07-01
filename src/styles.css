@@ -33,6 +33,7 @@
   --text-2xs: 11px;
   --text-xs: 12.5px;
   --text-sm: 14px;
+  --side-panel-width: clamp(270px, 15vw, 288px);
 
   color-scheme: light;
   font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
@@ -415,6 +416,10 @@ main {
 
 .print-cluster {
   order: 2;
+  gap: 4px;
+  padding: 4px 5px;
+  width: var(--side-panel-width);
+  justify-content: space-between;
 }
 
 .view-cluster {
@@ -432,6 +437,7 @@ main {
 .print-cluster .cluster-label {
   color: var(--seal);
   font-weight: 700;
+  padding-inline: 3px;
 }
 
 .icon-button {
@@ -446,14 +452,14 @@ main {
 }
 
 .print-select {
-  grid-template-columns: auto minmax(160px, 1fr);
   color: var(--seal);
   font-weight: 700;
   align-items: center;
+  gap: 4px;
 }
 
 .print-select select {
-  width: 180px;
+  width: 142px;
   font-weight: 500;
   color: var(--ink);
 }
@@ -730,13 +736,13 @@ main {
 }
 
 .inline-select.print-select select {
-  width: 190px;
+  width: 142px;
 }
 
 .mindmap-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) var(--side-panel-width);
+  gap: 10px;
   height: calc(100% - 52px);
   min-height: 520px;
 }
@@ -789,7 +795,7 @@ main {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 12px;
+  padding: 10px;
   overflow: hidden;
   box-shadow: var(--shadow-soft);
 }
@@ -814,8 +820,8 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
-  margin-top: 12px;
-  padding: 4px;
+  margin-top: 10px;
+  padding: 3px;
   background: var(--panel-sunk);
   border-radius: 10px;
 }
@@ -844,11 +850,11 @@ main {
 
 .side-filters {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto;
   align-items: end;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding: 10px;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: rgba(236, 236, 234, 0.58);
@@ -858,7 +864,7 @@ main {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   padding-bottom: 2px;
   grid-column: 1 / -1;
 }
@@ -876,23 +882,25 @@ main {
 
 .side-search-label {
   font-size: 12px;
+  width: 158px;
 }
 
 #sideSearchBtn {
-  min-width: 58px;
+  min-width: 50px;
+  padding-inline: 10px;
 }
 
 .filter-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   grid-column: 1 / -1;
 }
 
 .filter-row label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -907,11 +915,11 @@ main {
 }
 
 #sideGradeFilter {
-  width: 74px;
+  width: 64px;
 }
 
 #sidePlacedFilter {
-  width: 102px;
+  width: 100px;
 }
 
 .side-activity-list {

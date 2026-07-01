@@ -532,18 +532,24 @@
       card.addEventListener("click", () => {
         if (placed) {
           const node = getActivityNode(activity.id);
+          clearMindmapModes();
           selected = { type: "node", id: node.id };
           switchPanel("detail");
           renderMindmap();
           renderDetail();
+          renderSideActivityList();
           return;
         }
-        pendingActivityId = pendingActivityId === activity.id ? null : activity.id;
+        togglePlacementMode(activity.id);
         updatePlacementHint();
         renderSideActivityList();
+        renderMindmap();
       });
       card.addEventListener("dragstart", (event) => {
         if (placed) return;
+        clearMindmapModes();
+        updatePlacementHint();
+        renderMindmap();
         event.dataTransfer.setData("text/plain", activity.id);
         event.dataTransfer.effectAllowed = "copy";
       });
@@ -560,6 +566,7 @@
   function renderMindmap() {
     if (connectStartId && !getNode(connectStartId)) connectStartId = null;
     if (groupMoveId && !getNode(groupMoveId)) groupMoveId = null;
+    if (pendingActivityId && !getActivity(pendingActivityId)) pendingActivityId = null;
     const viewport = state.mindmap.viewport;
     els.viewportGroup.setAttribute("transform", `translate(${viewport.offsetX} ${viewport.offsetY}) scale(${viewport.scale})`);
     els.edgesGroup.innerHTML = "";
@@ -595,8 +602,7 @@
     hit.setAttribute("d", d);
     hit.addEventListener("click", (event) => {
       event.stopPropagation();
-      connectStartId = null;
-      groupMoveId = null;
+      clearMindmapModes();
       selected = { type: "edge", id: edge.id };
       switchPanel("detail");
       renderMindmap();
@@ -746,10 +752,33 @@
 
   function clearMindmapSelection() {
     selected = { type: null, id: null };
-    connectStartId = null;
-    groupMoveId = null;
+    clearMindmapModes();
     renderMindmap();
     renderDetail();
+  }
+
+  function clearMindmapModes() {
+    pendingActivityId = null;
+    connectStartId = null;
+    groupMoveId = null;
+  }
+
+  function togglePlacementMode(activityId) {
+    const isActive = pendingActivityId === activityId;
+    clearMindmapModes();
+    if (!isActive) pendingActivityId = activityId;
+  }
+
+  function toggleConnectionMode(nodeId) {
+    const isActive = connectStartId === nodeId;
+    clearMindmapModes();
+    if (!isActive) connectStartId = nodeId;
+  }
+
+  function toggleGroupMoveMode(nodeId) {
+    const isActive = groupMoveId === nodeId;
+    clearMindmapModes();
+    if (!isActive) groupMoveId = nodeId;
   }
 
   function handleNodeAction(nodeId, action) {
@@ -757,16 +786,14 @@
     selected = { type: "node", id: nodeId };
     switchPanel("detail");
     if (action === "connect") {
-      groupMoveId = null;
-      connectStartId = connectStartId === nodeId ? null : nodeId;
+      toggleConnectionMode(nodeId);
       renderMindmap();
       renderDetail();
       updatePlacementHint();
       return;
     }
     if (action === "group") {
-      connectStartId = null;
-      groupMoveId = groupMoveId === nodeId ? null : nodeId;
+      toggleGroupMoveMode(nodeId);
       renderMindmap();
       renderDetail();
       updatePlacementHint();
@@ -785,6 +812,11 @@
     const node = getNode(nodeId);
     if (!node) return;
     if (connectStartId) return;
+    if (pendingActivityId) {
+      clearMindmapModes();
+      updatePlacementHint();
+      renderSideActivityList();
+    }
     selectNode(nodeId);
 
     const world = clientToWorld(event.clientX, event.clientY);
@@ -818,17 +850,16 @@
 
   function handleConnectClick(nodeId) {
     if (!connectStartId) {
+      clearMindmapModes();
       connectStartId = nodeId;
       selected = { type: "node", id: nodeId };
-      groupMoveId = null;
       switchPanel("detail");
       renderMindmap();
       renderDetail();
       return;
     }
     if (connectStartId === nodeId) {
-      connectStartId = null;
-      groupMoveId = null;
+      clearMindmapModes();
       selected = { type: null, id: null };
       showToast("연결을 취소했다.");
       renderMindmap();
@@ -849,8 +880,7 @@
     }
     pushUndo();
     state.mindmap.edges.push({ id: createId("edge"), from: connectStartId, to: nodeId, label: "" });
-    connectStartId = null;
-    groupMoveId = null;
+    clearMindmapModes();
     selected = { type: null, id: null };
     renderMindmap();
     renderDetail();
@@ -1069,7 +1099,7 @@
       starSolid: false,
       starOutline: false
     });
-    pendingActivityId = null;
+    clearMindmapModes();
     selected = { type: "node", id: state.mindmap.nodes[state.mindmap.nodes.length - 1].id };
     switchPanel("detail");
     renderSideActivityList();
