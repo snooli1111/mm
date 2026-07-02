@@ -661,9 +661,19 @@
     const barWidth = node.type === "core" ? 96 : 172;
     const barHeight = 34;
     const gap = 8;
-    const x = node.x + dim.w / 2 - barWidth / 2;
-    const placeAbove = node.y > barHeight + gap;
-    const y = placeAbove ? node.y - barHeight - gap : node.y + dim.h + gap;
+    const visible = visibleWorldBounds();
+    const margin = 6 / state.mindmap.viewport.scale;
+    const idealX = node.x + dim.w / 2 - barWidth / 2;
+    const minX = visible.x + margin;
+    const maxX = visible.x + visible.w - barWidth - margin;
+    const x = maxX >= minX ? clamp(idealX, minX, maxX) : idealX;
+    const aboveY = node.y - barHeight - gap;
+    const belowY = node.y + dim.h + gap;
+    let y = aboveY >= visible.y + margin ? aboveY : belowY;
+    if (y + barHeight > visible.y + visible.h - margin) y = aboveY;
+    const minY = visible.y + margin;
+    const maxY = visible.y + visible.h - barHeight - margin;
+    if (maxY >= minY) y = clamp(y, minY, maxY);
 
     const group = document.createElementNS(SVG_NS, "g");
     group.setAttribute("class", "node-action-bar-svg");
@@ -1091,12 +1101,17 @@
       return;
     }
     if (dragState) {
+      const wasTap = !dragState.moved;
       if (dragState.moved) {
         commitUndo(dragState.before);
         suppressNodeClickUntil = Date.now() + 250;
         scheduleAutosave();
       }
       dragState = null;
+      if (wasTap && selected.type === "node") {
+        renderMindmap();
+        renderDetail();
+      }
     }
     if (panState) {
       if (!panState.moved) {
@@ -1537,6 +1552,17 @@
     return {
       x: (rect.width / 2 - viewport.offsetX) / viewport.scale,
       y: (rect.height / 2 - viewport.offsetY) / viewport.scale
+    };
+  }
+
+  function visibleWorldBounds() {
+    const rect = els.mindmapSvg.getBoundingClientRect();
+    const viewport = state.mindmap.viewport;
+    return {
+      x: -viewport.offsetX / viewport.scale,
+      y: -viewport.offsetY / viewport.scale,
+      w: rect.width / viewport.scale,
+      h: rect.height / viewport.scale
     };
   }
 
