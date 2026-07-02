@@ -7,9 +7,9 @@
   const CATEGORY_ORDER = ["출결", "창체", "교과성적", "교과세특", "행발"];
   const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "과학", "교양예술"];
   const AREA_META = {
-    "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#d9ebe4", activityBg: "#edf7f3" },
-    "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#f1dde5", activityBg: "#faeef4" },
-    "공동체역량": { short: "공동체", cls: "community", color: "#aa8d31", bg: "#f3e7b7", activityBg: "#fff5d3" }
+    "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#cfe5dc", activityBg: "#f4fbf8" },
+    "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#edd4df", activityBg: "#fff7fb" },
+    "공동체역량": { short: "공동체", cls: "community", color: "#aa8d31", bg: "#f0df9f", activityBg: "#fff9e8" }
   };
   const CORE_NODES = [
     { id: "core-academic", type: "core", area: "학업역량", label: "학업", x: 180, y: 120 },
@@ -21,10 +21,10 @@
   let state = createDefaultState();
   let editingActivityId = null;
   let selected = { type: null, id: null };
+  let selectedNodeIds = [];
   let currentTab = "activities";
   let pendingActivityId = null;
   let connectStartId = null;
-  let groupMoveId = null;
   let undoStack = [];
   let autosaveTimer = null;
   let toastTimer = null;
@@ -432,8 +432,8 @@
     if (editingActivityId === id) clearActivityForm();
     if (selected.type === "node" && selected.id === node?.id) {
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       connectStartId = null;
-      groupMoveId = null;
     }
     renderAll();
     scheduleAutosave();
@@ -533,6 +533,7 @@
           const node = getActivityNode(activity.id);
           clearMindmapModes();
           selected = { type: "node", id: node.id };
+          selectedNodeIds = [node.id];
           switchPanel("detail");
           renderMindmap();
           renderDetail();
@@ -564,8 +565,8 @@
 
   function renderMindmap() {
     if (connectStartId && !getNode(connectStartId)) connectStartId = null;
-    if (groupMoveId && !getNode(groupMoveId)) groupMoveId = null;
     if (pendingActivityId && !getActivity(pendingActivityId)) pendingActivityId = null;
+    syncSelectedNodeIds();
     const viewport = state.mindmap.viewport;
     els.viewportGroup.setAttribute("transform", `translate(${viewport.offsetX} ${viewport.offsetY}) scale(${viewport.scale})`);
     els.edgesGroup.innerHTML = "";
@@ -604,6 +605,7 @@
       event.stopPropagation();
       clearMindmapModes();
       selected = { type: "edge", id: edge.id };
+      selectedNodeIds = [];
       switchPanel("detail");
       renderMindmap();
       renderDetail();
@@ -658,7 +660,7 @@
     const node = getNode(selected.id);
     if (!node) return;
     const dim = nodeDimensions(node);
-    const barWidth = node.type === "core" ? 112 : 188;
+    const barWidth = node.type === "core" ? 50 : 126;
     const barHeight = 34;
     const gap = 8;
     const visible = visibleWorldBounds();
@@ -687,8 +689,6 @@
       nextX += 34;
     }
     appendActionButton(group, nextX, y + 3, 42, "연결", connectStartId === node.id, () => handleNodeAction(node.id, "connect"));
-    nextX += 45;
-    appendActionButton(group, nextX, y + 3, 60, "같이 이동", groupMoveId === node.id, () => handleNodeAction(node.id, "group"));
 
     els.nodesGroup.appendChild(group);
   }
@@ -697,22 +697,6 @@
     const solid = node.starSolid ? "⭐" : "";
     const outline = node.starOutline ? "🩷" : "";
     return `${solid}${outline}`;
-  }
-
-  function nodeActionControls(node) {
-    const solid = node.starSolid ? " active" : "";
-    const outline = node.starOutline ? " active" : "";
-    const connect = connectStartId === node.id ? " active" : "";
-    const group = groupMoveId === node.id ? " active" : "";
-    const stars = node.type === "core" ? "" : `
-      <button type="button" class="${solid.trim()}" data-star="solid" title="⭐로 표시">⭐</button>
-      <button type="button" class="${outline.trim()}" data-star="outline" title="🩷로 표시">🩷</button>
-    `;
-    return `
-      ${stars}
-      <button type="button" class="${connect.trim()}" data-node-action="connect" title="이 노드에서 다른 노드로 연결">연결</button>
-      <button type="button" class="${group.trim()}" data-node-action="group" title="연결된 노드를 같이 이동">같이 이동</button>
-    `;
   }
 
   function renderCoreNodeSvg(parent, node, dim) {
@@ -726,7 +710,7 @@
       r: dim.w / 2,
       fill: meta.bg,
       stroke: meta.color,
-      "stroke-width": 2.4,
+      "stroke-width": 1.8,
       class: "node-shape"
     }));
     appendSvgText(parent, { x: cx, y: cy + 7, "text-anchor": "middle", class: "node-text core-text" }, node.label);
@@ -742,7 +726,7 @@
       rx: 8,
       fill: "#eeeeea",
       stroke: "#9da39a",
-      "stroke-width": 2,
+      "stroke-width": 1.3,
       class: "node-shape"
     }));
     const stars = starMarks(node);
@@ -773,7 +757,7 @@
       rx: 8,
       fill: meta.activityBg,
       stroke: meta.color,
-      "stroke-width": 2,
+      "stroke-width": 1.3,
       class: "node-shape"
     }));
     parent.appendChild(svgEl("rect", {
@@ -805,13 +789,13 @@
   }
 
   function appendNodeHalo(parent, node, dim, shape) {
-    const selectedNode = selected.type === "node" && selected.id === node.id;
+    const selectedNode = selectedNodeIds.includes(node.id);
     const connectNode = connectStartId === node.id;
     if (!selectedNode && !connectNode) return;
     const attrs = {
       fill: "none",
       stroke: connectNode ? "rgba(38, 53, 43, 0.42)" : "rgba(38, 53, 43, 0.24)",
-      "stroke-width": connectNode ? 4 : 3,
+      "stroke-width": connectNode ? 3.2 : 2.4,
       class: "node-halo"
     };
     if (shape === "circle") {
@@ -883,14 +867,16 @@
   function selectNode(nodeId) {
     const node = getNode(nodeId);
     if (!node) return;
+    if (selected.type !== "node") selectedNodeIds = [];
+    if (!selectedNodeIds.includes(nodeId)) selectedNodeIds.push(nodeId);
     selected = { type: "node", id: nodeId };
-    if (groupMoveId && groupMoveId !== nodeId) groupMoveId = null;
     switchPanel("detail");
     renderDetail();
   }
 
   function clearMindmapSelection() {
     selected = { type: null, id: null };
+    selectedNodeIds = [];
     clearMindmapModes();
     renderMindmap();
     renderDetail();
@@ -899,7 +885,6 @@
   function clearMindmapModes() {
     pendingActivityId = null;
     connectStartId = null;
-    groupMoveId = null;
   }
 
   function togglePlacementMode(activityId) {
@@ -914,14 +899,9 @@
     if (!isActive) connectStartId = nodeId;
   }
 
-  function toggleGroupMoveMode(nodeId) {
-    const isActive = groupMoveId === nodeId;
-    clearMindmapModes();
-    if (!isActive) groupMoveId = nodeId;
-  }
-
   function handleNodeAction(nodeId, action) {
     if (!getNode(nodeId)) return;
+    selectNode(nodeId);
     selected = { type: "node", id: nodeId };
     switchPanel("detail");
     if (action === "connect") {
@@ -930,12 +910,6 @@
       renderDetail();
       updatePlacementHint();
       return;
-    }
-    if (action === "group") {
-      toggleGroupMoveMode(nodeId);
-      renderMindmap();
-      renderDetail();
-      updatePlacementHint();
     }
   }
 
@@ -959,7 +933,7 @@
     selectNode(nodeId);
 
     const world = clientToWorld(event.clientX, event.clientY);
-    const movingIds = groupMoveId === nodeId ? connectedComponent(nodeId) : [nodeId];
+    const movingIds = nodeDragIds(nodeId);
     dragState = {
       pointerId: event.pointerId,
       start: world,
@@ -992,6 +966,7 @@
       clearMindmapModes();
       connectStartId = nodeId;
       selected = { type: "node", id: nodeId };
+      selectedNodeIds = [nodeId];
       switchPanel("detail");
       renderMindmap();
       renderDetail();
@@ -1000,6 +975,7 @@
     if (connectStartId === nodeId) {
       clearMindmapModes();
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       showToast("연결을 취소했다.");
       renderMindmap();
       renderDetail();
@@ -1021,6 +997,7 @@
     state.mindmap.edges.push({ id: createId("edge"), from: connectStartId, to: nodeId, label: "" });
     clearMindmapModes();
     selected = { type: null, id: null };
+    selectedNodeIds = [];
     renderMindmap();
     renderDetail();
     scheduleAutosave();
@@ -1245,6 +1222,7 @@
     });
     clearMindmapModes();
     selected = { type: "node", id: state.mindmap.nodes[state.mindmap.nodes.length - 1].id };
+    selectedNodeIds = [selected.id];
     switchPanel("detail");
     renderSideActivityList();
     renderMindmap();
@@ -1285,6 +1263,7 @@
     };
     state.mindmap.nodes.push(node);
     selected = { type: "node", id: node.id };
+    selectedNodeIds = [node.id];
     clearKeywordForm();
     switchPanel("detail");
     renderMindmap();
@@ -1310,8 +1289,8 @@
     const node = getNode(selected.id);
     if (!node) {
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       connectStartId = null;
-      groupMoveId = null;
       renderDetail();
       return;
     }
@@ -1345,8 +1324,8 @@
       state.mindmap.nodes = state.mindmap.nodes.filter((item) => item.id !== node.id);
       removeEdgesForNode(node.id);
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       connectStartId = null;
-      groupMoveId = null;
       renderAll();
       scheduleAutosave();
     });
@@ -1395,8 +1374,8 @@
       state.mindmap.nodes = state.mindmap.nodes.filter((item) => item.id !== node.id);
       removeEdgesForNode(node.id);
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       connectStartId = null;
-      groupMoveId = null;
       renderAll();
       scheduleAutosave();
     });
@@ -1435,8 +1414,8 @@
     const edge = getEdge(selected.id);
     if (!edge) {
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       connectStartId = null;
-      groupMoveId = null;
       renderDetail();
       return;
     }
@@ -1469,8 +1448,8 @@
       pushUndo();
       state.mindmap.edges = state.mindmap.edges.filter((item) => item.id !== edge.id);
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       connectStartId = null;
-      groupMoveId = null;
       renderMindmap();
       renderDetail();
       scheduleAutosave();
@@ -1496,8 +1475,8 @@
     if (!snapshot) return;
     state.mindmap = snapshot;
     selected = { type: null, id: null };
+    selectedNodeIds = [];
     connectStartId = null;
-    groupMoveId = null;
     pendingActivityId = null;
     syncInputsFromState();
     renderSideActivityList();
@@ -1597,6 +1576,26 @@
     return Array.from(seen);
   }
 
+  function syncSelectedNodeIds() {
+    if (selected.type !== "node" || !getNode(selected.id)) {
+      selectedNodeIds = [];
+      return;
+    }
+    selectedNodeIds = selectedNodeIds.filter((id) => getNode(id));
+    if (!selectedNodeIds.includes(selected.id)) selectedNodeIds.push(selected.id);
+  }
+
+  function nodeDragIds(nodeId) {
+    const node = getNode(nodeId);
+    if (!node) return [];
+    syncSelectedNodeIds();
+    if (selectedNodeIds.length > 1 && selectedNodeIds.includes(nodeId)) {
+      return selectedNodeIds.filter((id) => getNode(id));
+    }
+    if (node.type === "core") return connectedComponent(nodeId);
+    return [nodeId];
+  }
+
   function edgeExists(a, b) {
     return state.mindmap.edges.some((edge) => {
       return (edge.from === a && edge.to === b) || (edge.from === b && edge.to === a);
@@ -1685,9 +1684,9 @@
         state = next;
         undoStack = [];
         selected = { type: null, id: null };
+        selectedNodeIds = [];
         pendingActivityId = null;
         connectStartId = null;
-        groupMoveId = null;
         resetActivitySearch();
         resetSideSearch();
         clearActivityForm();
@@ -1707,9 +1706,9 @@
     state = createDefaultState();
     undoStack = [];
     selected = { type: null, id: null };
+    selectedNodeIds = [];
     pendingActivityId = null;
     connectStartId = null;
-    groupMoveId = null;
     editingActivityId = null;
     resetActivitySearch();
     resetSideSearch();
@@ -1857,9 +1856,9 @@
       state = normalizeLoadedState(autosave.state);
       undoStack = [];
       selected = { type: null, id: null };
+      selectedNodeIds = [];
       pendingActivityId = null;
       connectStartId = null;
-      groupMoveId = null;
       resetActivitySearch();
       resetSideSearch();
       clearActivityForm();
@@ -2064,20 +2063,20 @@
     if (node.type === "core") {
       const meta = AREA_META[node.area];
       return `
-        <circle cx="${node.x + dim.w / 2}" cy="${node.y + dim.h / 2}" r="${dim.w / 2}" fill="${meta.bg}" stroke="${meta.color}" stroke-width="3"/>
+        <circle cx="${node.x + dim.w / 2}" cy="${node.y + dim.h / 2}" r="${dim.w / 2}" fill="${meta.bg}" stroke="${meta.color}" stroke-width="1.8"/>
         <text x="${node.x + dim.w / 2}" y="${node.y + dim.h / 2 + 7}" text-anchor="middle" font-size="22" font-weight="700" fill="#242623">${escapeHtml(node.label)}</text>
       `;
     }
     const activity = node.type === "activity" ? getActivity(node.activityId) : null;
     if (node.type === "keyword") {
       const title = node.title;
-      const stars = `${node.starSolid ? "⭐" : ""}${node.starOutline ? "♥️" : ""}`;
+      const stars = `${node.starSolid ? "⭐" : ""}${node.starOutline ? "🩷" : ""}`;
       const charsPerLine = Math.max(4, Math.floor((dim.w - 20) / 16));
       const lines = wrapText(title, charsPerLine, 2);
       const startY = node.y + dim.h / 2 - ((lines.length - 1) * 12) + 7;
       const textLines = lines.map((line, index) => `<text x="${node.x + dim.w / 2}" y="${startY + index * 24}" text-anchor="middle" font-size="20" font-weight="800" fill="#242623">${escapeHtml(line)}</text>`).join("");
       return `
-        <rect x="${node.x}" y="${node.y}" width="${dim.w}" height="${dim.h}" rx="8" fill="#eeeeea" stroke="#9da39a" stroke-width="2"/>
+        <rect x="${node.x}" y="${node.y}" width="${dim.w}" height="${dim.h}" rx="8" fill="#eeeeea" stroke="#9da39a" stroke-width="1.3"/>
         <text x="${node.x + dim.w - 9}" y="${node.y + 17}" text-anchor="end" font-size="15" fill="#242623">${escapeHtml(stars)}</text>
         ${textLines}
       `;
@@ -2087,12 +2086,12 @@
     const title = node.type === "keyword" ? node.title : activity.topic;
     const top = node.type === "activity" ? activity.grade : "키워드";
     const dot = node.type === "activity" && activity.secondaryArea ? `<circle cx="${node.x + 58}" cy="${node.y + 19}" r="6" fill="${AREA_META[activity.secondaryArea].color}" stroke="#666" stroke-width="1"/>` : "";
-    const stars = `${node.starSolid ? "⭐" : ""}${node.starOutline ? "♥️" : ""}`;
+    const stars = `${node.starSolid ? "⭐" : ""}${node.starOutline ? "🩷" : ""}`;
     const charsPerLine = Math.max(8, Math.floor((dim.w - 26) / 12));
     const lines = wrapText(title, charsPerLine, node.type === "activity" ? 3 : 2);
     const textLines = lines.map((line, index) => `<text x="${node.x + 12}" y="${node.y + 50 + index * 18}" font-size="14" font-weight="700" fill="#242623">${escapeHtml(line)}</text>`).join("");
     return `
-      <rect x="${node.x}" y="${node.y}" width="${dim.w}" height="${dim.h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+      <rect x="${node.x}" y="${node.y}" width="${dim.w}" height="${dim.h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="1.3"/>
       <rect x="${node.x + 10}" y="${node.y + 9}" width="${node.type === "activity" ? 42 : 54}" height="22" rx="11" fill="rgba(255,255,255,0.78)" stroke="#b8bfb5"/>
       <text x="${node.x + 31}" y="${node.y + 25}" text-anchor="middle" font-size="12" font-weight="700" fill="#242623">${escapeHtml(top)}</text>
       ${dot}
@@ -2112,7 +2111,7 @@
         </div>
         <div class="print-meta">
           <p>⭐ ${escapeHtml(state.mindmap.starLabels.solid || "")}</p>
-          <p>♥️ ${escapeHtml(state.mindmap.starLabels.outline || "")}</p>
+          <p>🩷 ${escapeHtml(state.mindmap.starLabels.outline || "")}</p>
           <p>출력일: ${dateText}</p>
         </div>
       </header>
