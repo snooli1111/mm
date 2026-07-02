@@ -658,7 +658,7 @@
     const node = getNode(selected.id);
     if (!node) return;
     const dim = nodeDimensions(node);
-    const barWidth = node.type === "core" ? 96 : 172;
+    const barWidth = node.type === "core" ? 112 : 188;
     const barHeight = 34;
     const gap = 8;
     const visible = visibleWorldBounds();
@@ -678,7 +678,6 @@
     const group = document.createElementNS(SVG_NS, "g");
     group.setAttribute("class", "node-action-bar-svg");
     group.dataset.nodeControl = "true";
-    group.appendChild(svgEl("rect", { x, y, width: barWidth, height: barHeight, rx: 17, class: "node-action-bg" }));
 
     let nextX = x + 4;
     if (node.type !== "core") {
@@ -689,7 +688,7 @@
     }
     appendActionButton(group, nextX, y + 3, 42, "연결", connectStartId === node.id, () => handleNodeAction(node.id, "connect"));
     nextX += 45;
-    appendActionButton(group, nextX, y + 3, 42, "묶음", groupMoveId === node.id, () => handleNodeAction(node.id, "group"));
+    appendActionButton(group, nextX, y + 3, 60, "같이 이동", groupMoveId === node.id, () => handleNodeAction(node.id, "group"));
 
     els.nodesGroup.appendChild(group);
   }
@@ -712,7 +711,7 @@
     return `
       ${stars}
       <button type="button" class="${connect.trim()}" data-node-action="connect" title="이 노드에서 다른 노드로 연결">연결</button>
-      <button type="button" class="${group.trim()}" data-node-action="group" title="연결된 노드를 함께 이동">묶음</button>
+      <button type="button" class="${group.trim()}" data-node-action="group" title="연결된 노드를 같이 이동">같이 이동</button>
     `;
   }
 

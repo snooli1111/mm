@@ -1128,23 +1128,19 @@ main {
   font-weight: 800;
 }
 
-.node-action-bg {
-  fill: rgba(253, 253, 252, 0.96);
-  stroke: rgba(80, 89, 77, 0.28);
-}
-
 .node-action-button {
   cursor: pointer;
 }
 
 .node-action-button rect {
-  fill: rgba(255, 255, 255, 0.78);
-  stroke: rgba(80, 89, 77, 0.22);
+  fill: rgba(253, 253, 252, 0.96);
+  stroke: rgba(80, 89, 77, 0.36);
+  stroke-width: 1.2;
 }
 
 .node-action-button text {
   fill: var(--ink);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   pointer-events: none;
   user-select: none;

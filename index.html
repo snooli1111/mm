@@ -1135,23 +1135,19 @@ main {
   font-weight: 800;
 }
 
-.node-action-bg {
-  fill: rgba(253, 253, 252, 0.96);
-  stroke: rgba(80, 89, 77, 0.28);
-}
-
 .node-action-button {
   cursor: pointer;
 }
 
 .node-action-button rect {
-  fill: rgba(255, 255, 255, 0.78);
-  stroke: rgba(80, 89, 77, 0.22);
+  fill: rgba(253, 253, 252, 0.96);
+  stroke: rgba(80, 89, 77, 0.36);
+  stroke-width: 1.2;
 }
 
 .node-action-button text {
   fill: var(--ink);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   pointer-events: none;
   user-select: none;
@@ -2468,7 +2464,7 @@ main {
     const node = getNode(selected.id);
     if (!node) return;
     const dim = nodeDimensions(node);
-    const barWidth = node.type === "core" ? 96 : 172;
+    const barWidth = node.type === "core" ? 112 : 188;
     const barHeight = 34;
     const gap = 8;
     const visible = visibleWorldBounds();
@@ -2488,7 +2484,6 @@ main {
     const group = document.createElementNS(SVG_NS, "g");
     group.setAttribute("class", "node-action-bar-svg");
     group.dataset.nodeControl = "true";
-    group.appendChild(svgEl("rect", { x, y, width: barWidth, height: barHeight, rx: 17, class: "node-action-bg" }));
 
     let nextX = x + 4;
     if (node.type !== "core") {
@@ -2499,7 +2494,7 @@ main {
     }
     appendActionButton(group, nextX, y + 3, 42, "연결", connectStartId === node.id, () => handleNodeAction(node.id, "connect"));
     nextX += 45;
-    appendActionButton(group, nextX, y + 3, 42, "묶음", groupMoveId === node.id, () => handleNodeAction(node.id, "group"));
+    appendActionButton(group, nextX, y + 3, 60, "같이 이동", groupMoveId === node.id, () => handleNodeAction(node.id, "group"));
 
     els.nodesGroup.appendChild(group);
   }
@@ -2522,7 +2517,7 @@ main {
     return `
       ${stars}
       <button type="button" class="${connect.trim()}" data-node-action="connect" title="이 노드에서 다른 노드로 연결">연결</button>
-      <button type="button" class="${group.trim()}" data-node-action="group" title="연결된 노드를 함께 이동">묶음</button>
+      <button type="button" class="${group.trim()}" data-node-action="group" title="연결된 노드를 같이 이동">같이 이동</button>
     `;
   }
 
