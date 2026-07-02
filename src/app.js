@@ -683,7 +683,7 @@
     if (node.type !== "core") {
       appendActionButton(group, nextX, y + 3, 28, "⭐", node.starSolid, () => toggleNodeStar(node.id, "solid"));
       nextX += 31;
-      appendActionButton(group, nextX, y + 3, 28, "♥", node.starOutline, () => toggleNodeStar(node.id, "outline"));
+      appendActionButton(group, nextX, y + 3, 28, "🩷", node.starOutline, () => toggleNodeStar(node.id, "outline"));
       nextX += 34;
     }
     appendActionButton(group, nextX, y + 3, 42, "연결", connectStartId === node.id, () => handleNodeAction(node.id, "connect"));
@@ -695,7 +695,7 @@
 
   function starMarks(node) {
     const solid = node.starSolid ? "⭐" : "";
-    const outline = node.starOutline ? "♥" : "";
+    const outline = node.starOutline ? "🩷" : "";
     return `${solid}${outline}`;
   }
 
@@ -706,7 +706,7 @@
     const group = groupMoveId === node.id ? " active" : "";
     const stars = node.type === "core" ? "" : `
       <button type="button" class="${solid.trim()}" data-star="solid" title="⭐로 표시">⭐</button>
-      <button type="button" class="${outline.trim()}" data-star="outline" title="♥로 표시">♥</button>
+      <button type="button" class="${outline.trim()}" data-star="outline" title="🩷로 표시">🩷</button>
     `;
     return `
       ${stars}
