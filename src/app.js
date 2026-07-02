@@ -2,10 +2,11 @@
   "use strict";
 
   const AUTOSAVE_KEY = "student-life-mindmap-autosave-v1";
-  const PROJECT_VERSION = 1;
+  const PROJECT_VERSION = 2;
   const AREAS = ["학업역량", "탐구역량", "공동체역량"];
   const CATEGORY_ORDER = ["출결", "창체", "교과성적", "교과세특", "행발"];
   const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "과학", "교양예술"];
+  const ATTENDANCE_SUBCATEGORIES = ["개근", "질병", "미인정"];
   const AREA_META = {
     "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#cfe5dc", activityBg: "#f4fbf8" },
     "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#edd4df", activityBg: "#fff7fb" },
@@ -57,7 +58,7 @@
       "studentNumber", "studentName", "helpBtn", "helpModal", "loadProjectBtn", "saveProjectBtn",
       "resetProjectBtn", "projectFileInput", "activityForm",
       "activityGrade", "activityCategory", "activitySubcategorySelect",
-      "activitySubjectDetail", "activityFormat",
+      "activityExtraDetail", "activityFormat",
       "primaryArea", "secondaryArea", "activityTopic", "activityMemo",
       "submitActivityBtn", "cancelEditBtn", "deleteActivityBtn", "activitySearch",
       "activitySearchBtn", "activitySearchResetBtn", "topicCount", "memoCount",
@@ -109,6 +110,7 @@
     });
 
     els.activityCategory.addEventListener("change", updateSubcategoryControl);
+    els.activitySubcategorySelect.addEventListener("change", updateActivityInputHints);
     els.primaryArea.addEventListener("change", updateSecondaryOptions);
     els.activityTopic.addEventListener("input", updateCharacterCounts);
     els.activityMemo.addEventListener("input", updateCharacterCounts);
@@ -242,6 +244,7 @@
 
   function updateSubcategoryControl() {
     const category = els.activityCategory.value;
+    const previous = els.activitySubcategorySelect.value;
     els.activitySubcategorySelect.innerHTML = "";
     let options = [""];
     let disabled = false;
@@ -249,7 +252,9 @@
       options = ["", "자율", "동아리", "진로", "봉사"];
     } else if (isCourseCategory(category)) {
       options = ["", ...COURSE_SUBCATEGORIES];
-    } else if (category === "출결" || category === "행발") {
+    } else if (category === "출결") {
+      options = ["", ...ATTENDANCE_SUBCATEGORIES];
+    } else if (category === "행발") {
       options = ["없음"];
       disabled = true;
     }
@@ -261,9 +266,40 @@
     });
     els.activitySubcategorySelect.disabled = disabled;
     if (disabled) els.activitySubcategorySelect.value = "없음";
-    els.activitySubjectDetail.disabled = !isCourseCategory(category);
-    els.activitySubjectDetail.placeholder = isCourseCategory(category) ? "예: 윤리와 사상" : "교과 항목에서 입력";
-    if (!isCourseCategory(category)) els.activitySubjectDetail.value = "";
+    else if (options.includes(previous)) els.activitySubcategorySelect.value = previous;
+    updateActivityInputHints();
+  }
+
+  function updateActivityInputHints() {
+    const category = els.activityCategory.value;
+    const subcategory = els.activitySubcategorySelect.value;
+    els.activityExtraDetail.placeholder = extraDetailPlaceholder(category, subcategory);
+    els.activityTopic.placeholder = category === "출결"
+      ? "예: 질병결석이 총 7회, 질병지각이 10회 매달 1회꼴로 있음."
+      : "활동주제 입력";
+    if (category === "출결") {
+      els.activityFormat.value = "출결";
+    } else if (els.activityFormat.value.trim() === "출결") {
+      els.activityFormat.value = "";
+    }
+  }
+
+  function extraDetailPlaceholder(category, subcategory) {
+    if (category === "출결") return "";
+    if (category === "창체") {
+      if (subcategory === "자율") return "예: 전비맵, 독프";
+      if (subcategory === "진로") return "예: 과학탐구역량, 진로탐색";
+      if (subcategory === "동아리") return "예: 동아리명, 부서명";
+      if (subcategory === "봉사") return "예: 봉사활동명";
+      return "예: 전비맵, 독프";
+    }
+    if (isCourseCategory(category)) {
+      if (subcategory === "사회") return "예: 윤리와 사상, 사회문제 탐구";
+      if (subcategory === "과학") return "예: 생명과학Ⅰ, 화학Ⅰ";
+      if (subcategory === "교양예술") return "예: 음악, 미술";
+      return "예: 과목명";
+    }
+    return "예: 과목명, 전비맵";
   }
 
   function updateSecondaryOptions() {
@@ -315,8 +351,8 @@
     const grade = els.activityGrade.value;
     const category = els.activityCategory.value;
     let subcategory = els.activitySubcategorySelect.value;
-    if (category === "출결" || category === "행발") subcategory = "없음";
-    const subjectDetail = isCourseCategory(category) ? els.activitySubjectDetail.value.trim() : "";
+    if (category === "행발") subcategory = "없음";
+    const extraDetail = category === "출결" ? "" : els.activityExtraDetail.value.trim();
     const topic = els.activityTopic.value.trim();
     const format = els.activityFormat.value.trim();
     const primaryArea = els.primaryArea.value;
@@ -325,7 +361,7 @@
 
     if (!grade) return showValidation("학년을 선택해야 한다.");
     if (!category) return showValidation("항목을 선택해야 한다.");
-    if ((category === "창체" || isCourseCategory(category)) && !subcategory) {
+    if ((category === "창체" || isCourseCategory(category) || category === "출결") && !subcategory) {
       return showValidation("세부항목을 입력해야 한다.");
     }
     if (!topic) return showValidation("활동주제를 입력해야 한다.");
@@ -337,7 +373,7 @@
       return showValidation("평가영역2는 평가영역1과 다르게 선택해야 한다.");
     }
     if (memo.length > 300) return showValidation("메모는 300자 이내로 입력해야 한다.");
-    return { grade, category, subcategory, subjectDetail, topic, format, primaryArea, secondaryArea, memo };
+    return { grade, category, subcategory, extraDetail, topic, format, primaryArea, secondaryArea, memo };
   }
 
   function showValidation(message) {
@@ -388,8 +424,9 @@
     els.activityCategory.value = activity.category;
     updateSubcategoryControl();
     els.activitySubcategorySelect.value = activity.subcategory || "";
-    els.activitySubjectDetail.value = activity.subjectDetail || "";
+    els.activityExtraDetail.value = activity.extraDetail || "";
     els.activityFormat.value = activity.format;
+    updateActivityInputHints();
     els.primaryArea.value = activity.primaryArea;
     updateSecondaryOptions();
     els.secondaryArea.value = activity.secondaryArea || "";
@@ -464,9 +501,9 @@
         <td>${escapeHtml(activity.grade)}</td>
         <td>${escapeHtml(activity.category)}</td>
         <td>${escapeHtml(activity.subcategory || "")}</td>
-        <td>${escapeHtml(activity.subjectDetail || "")}</td>
+        <td>${escapeHtml(activity.extraDetail || "")}</td>
         <td><div class="clamp">${escapeHtml(activity.topic)}</div></td>
-        <td><div class="clamp">${escapeHtml(activity.format)}</div></td>
+        <td><div class="clamp one-line">${escapeHtml(activity.format)}</div></td>
         <td>${areaPill(activity.primaryArea)}</td>
         <td>${activity.secondaryArea ? areaPill(activity.secondaryArea) : ""}</td>
         <td><div class="clamp">${escapeHtml(activity.memo || "")}</div></td>
@@ -1333,7 +1370,7 @@
         ${detailRow("학년", activity.grade)}
         ${detailRow("항목", activity.category)}
         ${detailRow("세부항목", activity.subcategory || "")}
-        ${detailRow("과목명 추가", activity.subjectDetail || "")}
+        ${detailRow("추가 구분", activity.extraDetail || "")}
         ${detailRow("형식", activity.format)}
         ${detailRow("평가영역1", activity.primaryArea)}
         ${detailRow("평가영역2", activity.secondaryArea || "")}
@@ -1775,19 +1812,23 @@
   }
 
   function normalizeActivity(activity) {
-    const next = { subjectDetail: "", ...activity };
+    const legacyExtraDetail = activity?.extraDetail ?? activity?.subjectDetail ?? "";
+    const next = { extraDetail: "", ...activity, extraDetail: legacyExtraDetail };
+    delete next.subjectDetail;
     if (next.category === "교과") {
       next.category = "교과세특";
       if (!COURSE_SUBCATEGORIES.includes(next.subcategory || "")) {
-        next.subjectDetail = next.subjectDetail || next.subcategory || "";
+        next.extraDetail = next.extraDetail || next.subcategory || "";
         next.subcategory = "";
       }
     }
-    if ((next.category === "출결" || next.category === "행발") && !next.subcategory) {
-      next.subcategory = "없음";
+    if (next.category === "출결") {
+      if (!ATTENDANCE_SUBCATEGORIES.includes(next.subcategory || "")) next.subcategory = "";
+      next.extraDetail = "";
+      if (!next.format) next.format = "출결";
     }
-    if (!isCourseCategory(next.category)) {
-      next.subjectDetail = "";
+    if (next.category === "행발" && !next.subcategory) {
+      next.subcategory = "없음";
     }
     if (!AREAS.includes(next.primaryArea)) {
       next.primaryArea = AREAS[0];
@@ -1956,12 +1997,12 @@
   }
 
   function buildActivityTsv() {
-    const headers = ["학년", "항목", "세부항목", "과목명 추가", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
+    const headers = ["학년", "항목", "세부항목", "추가 구분", "활동주제", "형식", "평가영역1", "평가영역2", "메모"];
     const rows = state.activities.map((activity) => [
       activity.grade,
       activity.category,
       activity.subcategory || "",
-      activity.subjectDetail || "",
+      activity.extraDetail || "",
       activity.topic,
       activity.format,
       activity.primaryArea,
@@ -1977,7 +2018,7 @@
         <td>${escapeHtml(activity.grade)}</td>
         <td>${escapeHtml(activity.category)}</td>
         <td>${escapeHtml(activity.subcategory || "")}</td>
-        <td>${escapeHtml(activity.subjectDetail || "")}</td>
+        <td>${escapeHtml(activity.extraDetail || "")}</td>
         <td>${escapeHtml(activity.topic)}</td>
         <td>${escapeHtml(activity.format)}</td>
         <td>${escapeHtml(activity.primaryArea)}</td>
@@ -1988,7 +2029,7 @@
     const html = printShell(`
       ${printHeader("활동 입력표")}
       <table class="print-table">
-        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>과목명 추가</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
+        <thead><tr><th>학년</th><th>항목</th><th>세부항목</th><th>추가 구분</th><th>활동주제</th><th>형식</th><th>평가영역1</th><th>평가영역2</th><th>메모</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="9">입력한 활동이 없다.</td></tr>'}</tbody>
       </table>
     `, "portrait");
@@ -2271,7 +2312,7 @@
 
   function activityPath(activity) {
     if (!activity?.subcategory) return "";
-    if (activity.subjectDetail) return `${activity.subcategory} / ${activity.subjectDetail}`;
+    if (activity.extraDetail) return `${activity.subcategory} / ${activity.extraDetail}`;
     return activity.subcategory;
   }
 
