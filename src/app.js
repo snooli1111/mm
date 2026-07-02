@@ -22,6 +22,7 @@
   let editingActivityId = null;
   let selected = { type: null, id: null };
   let selectedNodeIds = [];
+  let multiSelectMode = false;
   let currentTab = "activities";
   let pendingActivityId = null;
   let connectStartId = null;
@@ -61,7 +62,7 @@
       "submitActivityBtn", "cancelEditBtn", "deleteActivityBtn", "activitySearch",
       "activitySearchBtn", "activitySearchResetBtn", "topicCount", "memoCount",
       "activitySort", "activityTableBody", "copyTableBtn", "saveTsvBtn",
-      "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "zoomOutBtn",
+      "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "multiSelectBtn", "zoomOutBtn",
       "zoomResetBtn", "zoomInBtn", "fitViewBtn", "printModeSelect", "printSelectedBtn",
       "mindmapSvg", "viewportGroup",
       "edgesGroup", "edgeLabelsGroup", "nodesGroup", "placementHint",
@@ -137,6 +138,7 @@
     });
 
     els.undoBtn.addEventListener("click", undoMindmap);
+    els.multiSelectBtn.addEventListener("click", toggleMultiSelectMode);
     els.zoomOutBtn.addEventListener("click", () => setZoom(state.mindmap.viewport.scale - 0.1));
     els.zoomResetBtn.addEventListener("click", () => {
       state.mindmap.viewport.scale = 1;
@@ -532,6 +534,7 @@
         if (placed) {
           const node = getActivityNode(activity.id);
           clearMindmapModes();
+          multiSelectMode = false;
           selected = { type: "node", id: node.id };
           selectedNodeIds = [node.id];
           switchPanel("detail");
@@ -547,6 +550,8 @@
       });
       card.addEventListener("dragstart", (event) => {
         if (placed) return;
+        multiSelectMode = false;
+        selectedNodeIds = selected.type === "node" ? [selected.id] : [];
         clearMindmapModes();
         updatePlacementHint();
         renderMindmap();
@@ -578,6 +583,7 @@
     renderSelectedNodeActions();
     updatePlacementHint();
     updateUndoButton();
+    updateMultiSelectButton();
   }
 
   function renderEdge(edge) {
@@ -864,11 +870,16 @@
     return { w, h: 40 + visibleLines * 18 };
   }
 
-  function selectNode(nodeId) {
+  function selectNode(nodeId, options = {}) {
     const node = getNode(nodeId);
     if (!node) return;
-    if (selected.type !== "node") selectedNodeIds = [];
-    if (!selectedNodeIds.includes(nodeId)) selectedNodeIds.push(nodeId);
+    const shouldAdd = multiSelectMode && !options.forceSingle;
+    if (!shouldAdd) {
+      selectedNodeIds = [nodeId];
+    } else {
+      if (selected.type !== "node") selectedNodeIds = [];
+      if (!selectedNodeIds.includes(nodeId)) selectedNodeIds.push(nodeId);
+    }
     selected = { type: "node", id: nodeId };
     switchPanel("detail");
     renderDetail();
@@ -887,10 +898,22 @@
     connectStartId = null;
   }
 
+  function toggleMultiSelectMode() {
+    multiSelectMode = !multiSelectMode;
+    if (!multiSelectMode) {
+      selectedNodeIds = selected.type === "node" ? [selected.id] : [];
+    }
+    renderMindmap();
+  }
+
   function togglePlacementMode(activityId) {
     const isActive = pendingActivityId === activityId;
     clearMindmapModes();
-    if (!isActive) pendingActivityId = activityId;
+    if (!isActive) {
+      multiSelectMode = false;
+      selectedNodeIds = selected.type === "node" ? [selected.id] : [];
+      pendingActivityId = activityId;
+    }
   }
 
   function toggleConnectionMode(nodeId) {
@@ -901,10 +924,9 @@
 
   function handleNodeAction(nodeId, action) {
     if (!getNode(nodeId)) return;
-    selectNode(nodeId);
-    selected = { type: "node", id: nodeId };
-    switchPanel("detail");
     if (action === "connect") {
+      multiSelectMode = false;
+      selectNode(nodeId, { forceSingle: true });
       toggleConnectionMode(nodeId);
       renderMindmap();
       renderDetail();
@@ -1221,6 +1243,7 @@
       starOutline: false
     });
     clearMindmapModes();
+    multiSelectMode = false;
     selected = { type: "node", id: state.mindmap.nodes[state.mindmap.nodes.length - 1].id };
     selectedNodeIds = [selected.id];
     switchPanel("detail");
@@ -1262,6 +1285,7 @@
       starOutline: false
     };
     state.mindmap.nodes.push(node);
+    multiSelectMode = false;
     selected = { type: "node", id: node.id };
     selectedNodeIds = [node.id];
     clearKeywordForm();
@@ -1476,6 +1500,7 @@
     state.mindmap = snapshot;
     selected = { type: null, id: null };
     selectedNodeIds = [];
+    multiSelectMode = false;
     connectStartId = null;
     pendingActivityId = null;
     syncInputsFromState();
@@ -1487,6 +1512,14 @@
 
   function updateUndoButton() {
     els.undoBtn.disabled = undoStack.length === 0;
+  }
+
+  function updateMultiSelectButton() {
+    els.multiSelectBtn.classList.toggle("active", multiSelectMode);
+    els.multiSelectBtn.setAttribute("aria-pressed", String(multiSelectMode));
+    els.multiSelectBtn.title = multiSelectMode
+      ? "켜짐: 노드를 차례로 선택한 뒤 선택한 노드만 함께 움직인다."
+      : "꺼짐: 노드를 누르면 하나만 선택된다.";
   }
 
   function cloneMindmap() {
@@ -1556,7 +1589,7 @@
       return;
     }
     const activity = getActivity(pendingActivityId);
-    els.placementHint.textContent = activity ? "캔버스의 빈 곳을 누르면 활동 노드가 배치된다." : "";
+    els.placementHint.textContent = activity ? "태블릿에서는 활동 카드를 누른 뒤 캔버스 빈 곳을 누르면 배치된다." : "";
     els.placementHint.hidden = !activity;
   }
 
@@ -1581,6 +1614,10 @@
       selectedNodeIds = [];
       return;
     }
+    if (!multiSelectMode) {
+      selectedNodeIds = [selected.id];
+      return;
+    }
     selectedNodeIds = selectedNodeIds.filter((id) => getNode(id));
     if (!selectedNodeIds.includes(selected.id)) selectedNodeIds.push(selected.id);
   }
@@ -1589,7 +1626,7 @@
     const node = getNode(nodeId);
     if (!node) return [];
     syncSelectedNodeIds();
-    if (selectedNodeIds.length > 1 && selectedNodeIds.includes(nodeId)) {
+    if (multiSelectMode && selectedNodeIds.length > 1 && selectedNodeIds.includes(nodeId)) {
       return selectedNodeIds.filter((id) => getNode(id));
     }
     if (node.type === "core") return connectedComponent(nodeId);
@@ -1685,6 +1722,7 @@
         undoStack = [];
         selected = { type: null, id: null };
         selectedNodeIds = [];
+        multiSelectMode = false;
         pendingActivityId = null;
         connectStartId = null;
         resetActivitySearch();
@@ -1707,6 +1745,7 @@
     undoStack = [];
     selected = { type: null, id: null };
     selectedNodeIds = [];
+    multiSelectMode = false;
     pendingActivityId = null;
     connectStartId = null;
     editingActivityId = null;
@@ -1857,6 +1896,7 @@
       undoStack = [];
       selected = { type: null, id: null };
       selectedNodeIds = [];
+      multiSelectMode = false;
       pendingActivityId = null;
       connectStartId = null;
       resetActivitySearch();

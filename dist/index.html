@@ -275,6 +275,7 @@ label {
 
 main {
   height: calc(100vh - 168px);
+  height: calc(100dvh - 168px);
   overflow: hidden;
 }
 
@@ -434,6 +435,12 @@ main {
 
 .view-cluster {
   order: 1;
+}
+
+.tool-cluster button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .cluster-label {
@@ -1397,12 +1404,14 @@ main {
   main {
     height: auto;
     min-height: calc(100vh - 210px);
+    min-height: calc(100dvh - 210px);
     overflow: visible;
   }
 
   .tab-panel {
     height: auto;
     min-height: calc(100vh - 220px);
+    min-height: calc(100dvh - 220px);
   }
 
   .classification-row {
@@ -1424,6 +1433,7 @@ main {
 
   .canvas-shell {
     height: 68vh;
+    height: 68dvh;
     min-height: 480px;
   }
 
@@ -1652,6 +1662,7 @@ main {
           <div class="tool-cluster view-cluster" aria-label="화면 조작">
             <span class="cluster-label">화면</span>
             <button type="button" id="undoBtn" class="icon-button" title="마인드맵 조작을 한 단계 되돌린다." aria-label="실행취소">↶</button>
+            <button type="button" id="multiSelectBtn" title="켜면 노드를 차례로 선택해서 함께 움직인다." aria-pressed="false">여러 선택</button>
             <button type="button" id="zoomOutBtn">-</button>
             <button type="button" id="zoomResetBtn">100%</button>
             <button type="button" id="zoomInBtn">+</button>
@@ -1770,7 +1781,7 @@ main {
             <li><strong>활동입력탭</strong>: 생기부 항목별로 드러나는 활동을 모두 입력함.</li>
             <li><strong>마인드맵탭</strong>: 입력한 활동을 학업역량·탐구역량·공동체역량 중심으로, 관심 주제가 심화·확장되는 순서로 배치함.</li>
             <li>필요하면 키워드 노드를 추가해 활동을 정리·연결함.</li>
-            <li>중심 노드를 움직이면 연결된 노드가 함께 움직이고, 여러 노드를 차례로 선택한 뒤 움직이면 선택한 노드만 함께 움직임.</li>
+            <li>중심 노드를 움직이면 연결된 노드가 함께 움직임. 여러 노드만 따로 함께 움직이고 싶으면 <strong>여러 선택</strong>을 켜고 노드를 차례로 선택한 뒤 움직임.</li>
             <li>관련 있는 활동끼리 선으로 연결하고, 왜 연결되는지 짧게 적음.</li>
           </ul>
           <h4>2. 순서</h4>
@@ -1829,6 +1840,7 @@ main {
   let editingActivityId = null;
   let selected = { type: null, id: null };
   let selectedNodeIds = [];
+  let multiSelectMode = false;
   let currentTab = "activities";
   let pendingActivityId = null;
   let connectStartId = null;
@@ -1868,7 +1880,7 @@ main {
       "submitActivityBtn", "cancelEditBtn", "deleteActivityBtn", "activitySearch",
       "activitySearchBtn", "activitySearchResetBtn", "topicCount", "memoCount",
       "activitySort", "activityTableBody", "copyTableBtn", "saveTsvBtn",
-      "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "zoomOutBtn",
+      "printTableBtn", "solidFlowName", "outlineFlowName", "undoBtn", "multiSelectBtn", "zoomOutBtn",
       "zoomResetBtn", "zoomInBtn", "fitViewBtn", "printModeSelect", "printSelectedBtn",
       "mindmapSvg", "viewportGroup",
       "edgesGroup", "edgeLabelsGroup", "nodesGroup", "placementHint",
@@ -1944,6 +1956,7 @@ main {
     });
 
     els.undoBtn.addEventListener("click", undoMindmap);
+    els.multiSelectBtn.addEventListener("click", toggleMultiSelectMode);
     els.zoomOutBtn.addEventListener("click", () => setZoom(state.mindmap.viewport.scale - 0.1));
     els.zoomResetBtn.addEventListener("click", () => {
       state.mindmap.viewport.scale = 1;
@@ -2339,6 +2352,7 @@ main {
         if (placed) {
           const node = getActivityNode(activity.id);
           clearMindmapModes();
+          multiSelectMode = false;
           selected = { type: "node", id: node.id };
           selectedNodeIds = [node.id];
           switchPanel("detail");
@@ -2354,6 +2368,8 @@ main {
       });
       card.addEventListener("dragstart", (event) => {
         if (placed) return;
+        multiSelectMode = false;
+        selectedNodeIds = selected.type === "node" ? [selected.id] : [];
         clearMindmapModes();
         updatePlacementHint();
         renderMindmap();
@@ -2385,6 +2401,7 @@ main {
     renderSelectedNodeActions();
     updatePlacementHint();
     updateUndoButton();
+    updateMultiSelectButton();
   }
 
   function renderEdge(edge) {
@@ -2671,11 +2688,16 @@ main {
     return { w, h: 40 + visibleLines * 18 };
   }
 
-  function selectNode(nodeId) {
+  function selectNode(nodeId, options = {}) {
     const node = getNode(nodeId);
     if (!node) return;
-    if (selected.type !== "node") selectedNodeIds = [];
-    if (!selectedNodeIds.includes(nodeId)) selectedNodeIds.push(nodeId);
+    const shouldAdd = multiSelectMode && !options.forceSingle;
+    if (!shouldAdd) {
+      selectedNodeIds = [nodeId];
+    } else {
+      if (selected.type !== "node") selectedNodeIds = [];
+      if (!selectedNodeIds.includes(nodeId)) selectedNodeIds.push(nodeId);
+    }
     selected = { type: "node", id: nodeId };
     switchPanel("detail");
     renderDetail();
@@ -2694,10 +2716,22 @@ main {
     connectStartId = null;
   }
 
+  function toggleMultiSelectMode() {
+    multiSelectMode = !multiSelectMode;
+    if (!multiSelectMode) {
+      selectedNodeIds = selected.type === "node" ? [selected.id] : [];
+    }
+    renderMindmap();
+  }
+
   function togglePlacementMode(activityId) {
     const isActive = pendingActivityId === activityId;
     clearMindmapModes();
-    if (!isActive) pendingActivityId = activityId;
+    if (!isActive) {
+      multiSelectMode = false;
+      selectedNodeIds = selected.type === "node" ? [selected.id] : [];
+      pendingActivityId = activityId;
+    }
   }
 
   function toggleConnectionMode(nodeId) {
@@ -2708,10 +2742,9 @@ main {
 
   function handleNodeAction(nodeId, action) {
     if (!getNode(nodeId)) return;
-    selectNode(nodeId);
-    selected = { type: "node", id: nodeId };
-    switchPanel("detail");
     if (action === "connect") {
+      multiSelectMode = false;
+      selectNode(nodeId, { forceSingle: true });
       toggleConnectionMode(nodeId);
       renderMindmap();
       renderDetail();
@@ -3028,6 +3061,7 @@ main {
       starOutline: false
     });
     clearMindmapModes();
+    multiSelectMode = false;
     selected = { type: "node", id: state.mindmap.nodes[state.mindmap.nodes.length - 1].id };
     selectedNodeIds = [selected.id];
     switchPanel("detail");
@@ -3069,6 +3103,7 @@ main {
       starOutline: false
     };
     state.mindmap.nodes.push(node);
+    multiSelectMode = false;
     selected = { type: "node", id: node.id };
     selectedNodeIds = [node.id];
     clearKeywordForm();
@@ -3283,6 +3318,7 @@ main {
     state.mindmap = snapshot;
     selected = { type: null, id: null };
     selectedNodeIds = [];
+    multiSelectMode = false;
     connectStartId = null;
     pendingActivityId = null;
     syncInputsFromState();
@@ -3294,6 +3330,14 @@ main {
 
   function updateUndoButton() {
     els.undoBtn.disabled = undoStack.length === 0;
+  }
+
+  function updateMultiSelectButton() {
+    els.multiSelectBtn.classList.toggle("active", multiSelectMode);
+    els.multiSelectBtn.setAttribute("aria-pressed", String(multiSelectMode));
+    els.multiSelectBtn.title = multiSelectMode
+      ? "켜짐: 노드를 차례로 선택한 뒤 선택한 노드만 함께 움직인다."
+      : "꺼짐: 노드를 누르면 하나만 선택된다.";
   }
 
   function cloneMindmap() {
@@ -3363,7 +3407,7 @@ main {
       return;
     }
     const activity = getActivity(pendingActivityId);
-    els.placementHint.textContent = activity ? "캔버스의 빈 곳을 누르면 활동 노드가 배치된다." : "";
+    els.placementHint.textContent = activity ? "태블릿에서는 활동 카드를 누른 뒤 캔버스 빈 곳을 누르면 배치된다." : "";
     els.placementHint.hidden = !activity;
   }
 
@@ -3388,6 +3432,10 @@ main {
       selectedNodeIds = [];
       return;
     }
+    if (!multiSelectMode) {
+      selectedNodeIds = [selected.id];
+      return;
+    }
     selectedNodeIds = selectedNodeIds.filter((id) => getNode(id));
     if (!selectedNodeIds.includes(selected.id)) selectedNodeIds.push(selected.id);
   }
@@ -3396,7 +3444,7 @@ main {
     const node = getNode(nodeId);
     if (!node) return [];
     syncSelectedNodeIds();
-    if (selectedNodeIds.length > 1 && selectedNodeIds.includes(nodeId)) {
+    if (multiSelectMode && selectedNodeIds.length > 1 && selectedNodeIds.includes(nodeId)) {
       return selectedNodeIds.filter((id) => getNode(id));
     }
     if (node.type === "core") return connectedComponent(nodeId);
@@ -3492,6 +3540,7 @@ main {
         undoStack = [];
         selected = { type: null, id: null };
         selectedNodeIds = [];
+        multiSelectMode = false;
         pendingActivityId = null;
         connectStartId = null;
         resetActivitySearch();
@@ -3514,6 +3563,7 @@ main {
     undoStack = [];
     selected = { type: null, id: null };
     selectedNodeIds = [];
+    multiSelectMode = false;
     pendingActivityId = null;
     connectStartId = null;
     editingActivityId = null;
@@ -3664,6 +3714,7 @@ main {
       undoStack = [];
       selected = { type: null, id: null };
       selectedNodeIds = [];
+      multiSelectMode = false;
       pendingActivityId = null;
       connectStartId = null;
       resetActivitySearch();

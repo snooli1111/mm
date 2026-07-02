@@ -268,6 +268,7 @@ label {
 
 main {
   height: calc(100vh - 168px);
+  height: calc(100dvh - 168px);
   overflow: hidden;
 }
 
@@ -427,6 +428,12 @@ main {
 
 .view-cluster {
   order: 1;
+}
+
+.tool-cluster button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .cluster-label {
@@ -1390,12 +1397,14 @@ main {
   main {
     height: auto;
     min-height: calc(100vh - 210px);
+    min-height: calc(100dvh - 210px);
     overflow: visible;
   }
 
   .tab-panel {
     height: auto;
     min-height: calc(100vh - 220px);
+    min-height: calc(100dvh - 220px);
   }
 
   .classification-row {
@@ -1417,6 +1426,7 @@ main {
 
   .canvas-shell {
     height: 68vh;
+    height: 68dvh;
     min-height: 480px;
   }
 
