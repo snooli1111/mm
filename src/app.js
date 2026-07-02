@@ -7,9 +7,9 @@
   const CATEGORY_ORDER = ["출결", "창체", "교과성적", "교과세특", "행발"];
   const COURSE_SUBCATEGORIES = ["국어", "수학", "영어", "사회", "과학", "교양예술"];
   const AREA_META = {
-    "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#d9ebe4" },
-    "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#f1dde5" },
-    "공동체역량": { short: "공동체", cls: "community", color: "#aa8d31", bg: "#f3e7b7" }
+    "학업역량": { short: "학업", cls: "academic", color: "#4f927d", bg: "#d9ebe4", activityBg: "#edf7f3" },
+    "탐구역량": { short: "탐구", cls: "inquiry", color: "#b8778f", bg: "#f1dde5", activityBg: "#faeef4" },
+    "공동체역량": { short: "공동체", cls: "community", color: "#aa8d31", bg: "#f3e7b7", activityBg: "#fff5d3" }
   };
   const CORE_NODES = [
     { id: "core-academic", type: "core", area: "학업역량", label: "학업", x: 180, y: 120 },
@@ -17,7 +17,6 @@
     { id: "core-community", type: "core", area: "공동체역량", label: "공동체", x: 820, y: 120 }
   ];
   const SVG_NS = "http://www.w3.org/2000/svg";
-  const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
   let state = createDefaultState();
   let editingActivityId = null;
@@ -575,6 +574,7 @@
 
     state.mindmap.edges.forEach((edge) => renderEdge(edge));
     state.mindmap.nodes.forEach((node) => renderNode(node));
+    renderSelectedNodeActions();
     updatePlacementHint();
     updateUndoButton();
   }
@@ -612,101 +612,81 @@
 
     if (edge.label) {
       const mid = cubicPoint(p1, { x: c1x, y: p1.y }, { x: c2x, y: p2.y }, p2, 0.5);
-      const fo = document.createElementNS(SVG_NS, "foreignObject");
-      fo.setAttribute("class", "edge-label");
-      fo.setAttribute("x", mid.x - 80);
-      fo.setAttribute("y", mid.y - 16);
-      fo.setAttribute("width", 160);
-      fo.setAttribute("height", 42);
-      const div = document.createElementNS(XHTML_NS, "div");
-      div.textContent = edge.label;
-      fo.appendChild(div);
-      els.edgeLabelsGroup.appendChild(fo);
+      const lines = wrapText(edge.label, 18, 2);
+      const labelWidth = Math.min(160, Math.max(54, Math.max(...lines.map((line) => textLength(line))) * 8 + 18));
+      const labelHeight = 8 + lines.length * 16;
+      const group = document.createElementNS(SVG_NS, "g");
+      group.setAttribute("class", "edge-label-svg");
+      group.appendChild(svgEl("rect", {
+        x: mid.x - labelWidth / 2,
+        y: mid.y - labelHeight / 2,
+        width: labelWidth,
+        height: labelHeight,
+        rx: labelHeight / 2
+      }));
+      lines.forEach((line, index) => {
+        appendSvgText(group, {
+          x: mid.x,
+          y: mid.y - ((lines.length - 1) * 8) + index * 16 + 4,
+          "text-anchor": "middle"
+        }, line);
+      });
+      els.edgeLabelsGroup.appendChild(group);
     }
   }
 
   function renderNode(node) {
     const dim = nodeDimensions(node);
-    const fo = document.createElementNS(SVG_NS, "foreignObject");
-    fo.setAttribute("class", `node-fo${connectStartId === node.id ? " connect-start" : ""}`);
-    fo.setAttribute("x", node.x);
-    fo.setAttribute("y", node.y);
-    fo.setAttribute("width", dim.w);
-    fo.setAttribute("height", dim.h);
-    fo.dataset.nodeId = node.id;
+    const group = document.createElementNS(SVG_NS, "g");
+    const classes = ["node-svg", `node-${node.type}`];
+    if (selected.type === "node" && selected.id === node.id) classes.push("selected");
+    if (connectStartId === node.id) classes.push("connect-start");
+    group.setAttribute("class", classes.join(" "));
+    group.dataset.nodeId = node.id;
+    group.addEventListener("pointerdown", (event) => onNodePointerDown(event, node.id));
+    group.addEventListener("click", (event) => onNodeClick(event, node.id));
 
-    const div = document.createElementNS(XHTML_NS, "div");
-    div.className = nodeClass(node);
-    if (selected.type === "node" && selected.id === node.id) div.classList.add("selected");
-    div.dataset.nodeId = node.id;
-    div.innerHTML = nodeInnerHtml(node);
-    div.addEventListener("pointerdown", (event) => onNodePointerDown(event, node.id));
-    div.addEventListener("click", (event) => onNodeClick(event, node.id));
+    if (node.type === "core") renderCoreNodeSvg(group, node, dim);
+    else if (node.type === "keyword") renderKeywordNodeSvg(group, node, dim);
+    else renderActivityNodeSvg(group, node, dim);
 
-    div.querySelectorAll("[data-star]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        toggleNodeStar(node.id, button.dataset.star);
-      });
-    });
-    div.querySelectorAll("[data-node-action]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        handleNodeAction(node.id, button.dataset.nodeAction);
-      });
-    });
-
-    fo.appendChild(div);
-    els.nodesGroup.appendChild(fo);
+    els.nodesGroup.appendChild(group);
   }
 
-  function nodeClass(node) {
-    if (node.type === "core") {
-      return `node-card core ${AREA_META[node.area].cls}`;
-    }
-    if (node.type === "keyword") {
-      return "node-card keyword";
-    }
-    const activity = getActivity(node.activityId);
-    const cls = activity ? AREA_META[activity.primaryArea].cls : "";
-    return `node-card activity ${cls}`;
-  }
+  function renderSelectedNodeActions() {
+    if (selected.type !== "node") return;
+    const node = getNode(selected.id);
+    if (!node) return;
+    const dim = nodeDimensions(node);
+    const barWidth = node.type === "core" ? 96 : 172;
+    const barHeight = 34;
+    const gap = 8;
+    const x = node.x + dim.w / 2 - barWidth / 2;
+    const placeAbove = node.y > barHeight + gap;
+    const y = placeAbove ? node.y - barHeight - gap : node.y + dim.h + gap;
 
-  function nodeInnerHtml(node) {
-    if (node.type === "core") {
-      return `
-        <div class="core-label">${escapeHtml(node.label)}</div>
-        <span class="node-actions core-actions">${nodeActionControls(node)}</span>
-      `;
+    const group = document.createElementNS(SVG_NS, "g");
+    group.setAttribute("class", "node-action-bar-svg");
+    group.dataset.nodeControl = "true";
+    group.appendChild(svgEl("rect", { x, y, width: barWidth, height: barHeight, rx: 17, class: "node-action-bg" }));
+
+    let nextX = x + 4;
+    if (node.type !== "core") {
+      appendActionButton(group, nextX, y + 3, 28, "⭐", node.starSolid, () => toggleNodeStar(node.id, "solid"));
+      nextX += 31;
+      appendActionButton(group, nextX, y + 3, 28, "♥", node.starOutline, () => toggleNodeStar(node.id, "outline"));
+      nextX += 34;
     }
-    const stars = starMarks(node);
-    const controls = nodeActionControls(node);
-    if (node.type === "keyword") {
-      return `
-        <div class="node-topline">
-          <span class="star-marks">${stars}</span>
-          <span class="node-actions">${controls}</span>
-        </div>
-        <div class="node-title">${escapeHtml(node.title)}</div>
-      `;
-    }
-    const activity = getActivity(node.activityId);
-    if (!activity) return "";
-    const dot = activity.secondaryArea ? `<span class="area-dot ${AREA_META[activity.secondaryArea].cls}" title="${escapeHtml(activity.secondaryArea)}"></span>` : "";
-    return `
-      <div class="node-topline">
-        <span class="grade-badge">${activity.grade}</span>
-        ${dot}
-        <span class="star-marks">${stars}</span>
-        <span class="node-actions">${controls}</span>
-      </div>
-      <div class="node-title">${escapeHtml(activity.topic)}</div>
-    `;
+    appendActionButton(group, nextX, y + 3, 42, "연결", connectStartId === node.id, () => handleNodeAction(node.id, "connect"));
+    nextX += 45;
+    appendActionButton(group, nextX, y + 3, 42, "묶음", groupMoveId === node.id, () => handleNodeAction(node.id, "group"));
+
+    els.nodesGroup.appendChild(group);
   }
 
   function starMarks(node) {
     const solid = node.starSolid ? "⭐" : "";
-    const outline = node.starOutline ? "♥️" : "";
+    const outline = node.starOutline ? "♥" : "";
     return `${solid}${outline}`;
   }
 
@@ -717,7 +697,7 @@
     const group = groupMoveId === node.id ? " active" : "";
     const stars = node.type === "core" ? "" : `
       <button type="button" class="${solid.trim()}" data-star="solid" title="⭐로 표시">⭐</button>
-      <button type="button" class="${outline.trim()}" data-star="outline" title="♥️로 표시">♥️</button>
+      <button type="button" class="${outline.trim()}" data-star="outline" title="♥로 표시">♥</button>
     `;
     return `
       ${stars}
@@ -726,19 +706,169 @@
     `;
   }
 
+  function renderCoreNodeSvg(parent, node, dim) {
+    const meta = AREA_META[node.area];
+    const cx = node.x + dim.w / 2;
+    const cy = node.y + dim.h / 2;
+    appendNodeHalo(parent, node, dim, "circle");
+    parent.appendChild(svgEl("circle", {
+      cx,
+      cy,
+      r: dim.w / 2,
+      fill: meta.bg,
+      stroke: meta.color,
+      "stroke-width": 2.4,
+      class: "node-shape"
+    }));
+    appendSvgText(parent, { x: cx, y: cy + 7, "text-anchor": "middle", class: "node-text core-text" }, node.label);
+  }
+
+  function renderKeywordNodeSvg(parent, node, dim) {
+    appendNodeHalo(parent, node, dim, "rect");
+    parent.appendChild(svgEl("rect", {
+      x: node.x,
+      y: node.y,
+      width: dim.w,
+      height: dim.h,
+      rx: 8,
+      fill: "#eeeeea",
+      stroke: "#9da39a",
+      "stroke-width": 2,
+      class: "node-shape"
+    }));
+    const stars = starMarks(node);
+    if (stars) appendSvgText(parent, { x: node.x + dim.w - 8, y: node.y + 17, "text-anchor": "end", class: "node-stars" }, stars);
+    const charsPerLine = Math.max(4, Math.floor((dim.w - 20) / 16));
+    const lines = wrapText(node.title, charsPerLine, 2);
+    const startY = node.y + dim.h / 2 - ((lines.length - 1) * 12) + 7;
+    lines.forEach((line, index) => {
+      appendSvgText(parent, {
+        x: node.x + dim.w / 2,
+        y: startY + index * 24,
+        "text-anchor": "middle",
+        class: "node-text keyword-text"
+      }, line);
+    });
+  }
+
+  function renderActivityNodeSvg(parent, node, dim) {
+    const activity = getActivity(node.activityId);
+    if (!activity) return;
+    const meta = AREA_META[activity.primaryArea];
+    appendNodeHalo(parent, node, dim, "rect");
+    parent.appendChild(svgEl("rect", {
+      x: node.x,
+      y: node.y,
+      width: dim.w,
+      height: dim.h,
+      rx: 8,
+      fill: meta.activityBg,
+      stroke: meta.color,
+      "stroke-width": 2,
+      class: "node-shape"
+    }));
+    parent.appendChild(svgEl("rect", {
+      x: node.x + 8,
+      y: node.y + 7,
+      width: 24,
+      height: 18,
+      rx: 9,
+      class: "grade-badge-svg"
+    }));
+    appendSvgText(parent, { x: node.x + 20, y: node.y + 20, "text-anchor": "middle", class: "grade-text" }, activity.grade);
+    if (activity.secondaryArea) {
+      parent.appendChild(svgEl("circle", {
+        cx: node.x + 40,
+        cy: node.y + 16,
+        r: 5,
+        fill: AREA_META[activity.secondaryArea].color,
+        stroke: "rgba(0,0,0,0.25)",
+        "stroke-width": 1
+      }));
+    }
+    const stars = starMarks(node);
+    if (stars) appendSvgText(parent, { x: node.x + dim.w - 8, y: node.y + 21, "text-anchor": "end", class: "node-stars" }, stars);
+    const charsPerLine = Math.max(5, Math.floor((dim.w - 20) / 12));
+    const lines = wrapText(activity.topic, charsPerLine, 3);
+    lines.forEach((line, index) => {
+      appendSvgText(parent, { x: node.x + 10, y: node.y + 43 + index * 18, class: "node-text activity-text" }, line);
+    });
+  }
+
+  function appendNodeHalo(parent, node, dim, shape) {
+    const selectedNode = selected.type === "node" && selected.id === node.id;
+    const connectNode = connectStartId === node.id;
+    if (!selectedNode && !connectNode) return;
+    const attrs = {
+      fill: "none",
+      stroke: connectNode ? "rgba(38, 53, 43, 0.42)" : "rgba(38, 53, 43, 0.24)",
+      "stroke-width": connectNode ? 4 : 3,
+      class: "node-halo"
+    };
+    if (shape === "circle") {
+      parent.appendChild(svgEl("circle", {
+        ...attrs,
+        cx: node.x + dim.w / 2,
+        cy: node.y + dim.h / 2,
+        r: dim.w / 2 + 4
+      }));
+      return;
+    }
+    parent.appendChild(svgEl("rect", {
+      ...attrs,
+      x: node.x - 4,
+      y: node.y - 4,
+      width: dim.w + 8,
+      height: dim.h + 8,
+      rx: 11
+    }));
+  }
+
+  function appendActionButton(parent, x, y, width, label, active, callback) {
+    const group = document.createElementNS(SVG_NS, "g");
+    group.setAttribute("class", `node-action-button${active ? " active" : ""}`);
+    group.dataset.nodeControl = "true";
+    group.appendChild(svgEl("rect", { x, y, width, height: 28, rx: 14 }));
+    appendSvgText(group, { x: x + width / 2, y: y + 18, "text-anchor": "middle" }, label);
+    group.addEventListener("pointerdown", (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    });
+    group.addEventListener("click", (event) => {
+      event.stopPropagation();
+      callback();
+    });
+    parent.appendChild(group);
+  }
+
+  function svgEl(tag, attrs) {
+    const element = document.createElementNS(SVG_NS, tag);
+    Object.entries(attrs || {}).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) element.setAttribute(key, value);
+    });
+    return element;
+  }
+
+  function appendSvgText(parent, attrs, text) {
+    const element = svgEl("text", attrs);
+    element.textContent = text || "";
+    parent.appendChild(element);
+    return element;
+  }
+
   function nodeDimensions(node) {
-    if (node.type === "core") return { w: 96, h: 96 };
+    if (node.type === "core") return { w: 88, h: 88 };
     if (node.type === "keyword") {
       const len = textLength(node.title);
-      const w = Math.round(clamp(166 + len * 1.8, 176, 220));
-      const visibleLines = visibleNodeLines(len, w, 26, 14, 2);
-      return { w, h: visibleLines > 1 ? 92 : 76 };
+      const w = Math.round(clamp(56 + len * 10, 86, 170));
+      const visibleLines = visibleNodeLines(len, w, 20, 16, 2);
+      return { w, h: visibleLines > 1 ? 72 : 52 };
     }
     const activity = getActivity(node.activityId);
     const len = textLength(activity?.topic);
-    const w = Math.round(clamp(166 + len, 180, 220));
-    const visibleLines = visibleNodeLines(len, w, 28, 12, 3);
-    return { w, h: 62 + visibleLines * 18 };
+    const w = Math.round(clamp(92 + len * 1.2, 122, 188));
+    const visibleLines = visibleNodeLines(len, w, 20, 12, 3);
+    return { w, h: 40 + visibleLines * 18 };
   }
 
   function selectNode(nodeId) {
@@ -1914,7 +2044,20 @@
       `;
     }
     const activity = node.type === "activity" ? getActivity(node.activityId) : null;
-    const fill = node.type === "keyword" ? "#eeeeea" : AREA_META[activity.primaryArea].bg;
+    if (node.type === "keyword") {
+      const title = node.title;
+      const stars = `${node.starSolid ? "⭐" : ""}${node.starOutline ? "♥️" : ""}`;
+      const charsPerLine = Math.max(4, Math.floor((dim.w - 20) / 16));
+      const lines = wrapText(title, charsPerLine, 2);
+      const startY = node.y + dim.h / 2 - ((lines.length - 1) * 12) + 7;
+      const textLines = lines.map((line, index) => `<text x="${node.x + dim.w / 2}" y="${startY + index * 24}" text-anchor="middle" font-size="20" font-weight="800" fill="#242623">${escapeHtml(line)}</text>`).join("");
+      return `
+        <rect x="${node.x}" y="${node.y}" width="${dim.w}" height="${dim.h}" rx="8" fill="#eeeeea" stroke="#9da39a" stroke-width="2"/>
+        <text x="${node.x + dim.w - 9}" y="${node.y + 17}" text-anchor="end" font-size="15" fill="#242623">${escapeHtml(stars)}</text>
+        ${textLines}
+      `;
+    }
+    const fill = AREA_META[activity.primaryArea].activityBg;
     const stroke = node.type === "keyword" ? "#9da39a" : AREA_META[activity.primaryArea].color;
     const title = node.type === "keyword" ? node.title : activity.topic;
     const top = node.type === "activity" ? activity.grade : "키워드";
